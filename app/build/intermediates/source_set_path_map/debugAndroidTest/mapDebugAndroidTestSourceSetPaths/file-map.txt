@@ -1,0 +1,4 @@
+com.seoul2033wiki.test.app-androidTest-0 C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\build\generated\res\resValues\androidTest\debug
+com.seoul2033wiki.test.app-mergeDebugAndroidTestResources-1 C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+com.seoul2033wiki.test.app-mergeDebugAndroidTestResources-2 C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+com.seoul2033wiki.test.app-debugAndroidTest-3 C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources

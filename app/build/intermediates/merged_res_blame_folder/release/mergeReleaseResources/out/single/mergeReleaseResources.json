@@ -1,0 +1,114 @@
+[
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/layout_activity_main.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/layout_activity_result_popup.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/layout/activity_result_popup.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/drawable_overlay_btn_bg_active.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/drawable/overlay_btn_bg_active.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/layout_overlay_button.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/layout/overlay_button.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/drawable_btn_manage.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/drawable/btn_manage.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/drawable_btn_stop.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/drawable/btn_stop.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/drawable_btn_secondary.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/drawable/btn_secondary.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-hdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-xhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/font_kopub_batang_bold.ttf.flat",
+        "source": "com.seoul2033wiki.app-main-32:/font/kopub_batang_bold.ttf"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-xxxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/drawable_overlay_btn_bg.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/drawable/overlay_btn_bg.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/font_kopub_batang.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/font/kopub_batang.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-mdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/font_kopub_batang_medium.ttf.flat",
+        "source": "com.seoul2033wiki.app-main-32:/font/kopub_batang_medium.ttf"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/drawable_btn_primary.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/drawable/btn_primary.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/xml_accessibility_service_config.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/xml/accessibility_service_config.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/font_kopub_batang_regular.ttf.flat",
+        "source": "com.seoul2033wiki.app-main-32:/font/kopub_batang_regular.ttf"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/drawable_status_card.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/drawable/status_card.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.seoul2033wiki.app-release-31:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "com.seoul2033wiki.app-main-32:/mipmap-xxhdpi/ic_launcher_round.png"
+    }
+]
