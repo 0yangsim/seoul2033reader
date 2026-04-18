@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Seoul2033Wiki" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#1A1A1A</item>
+        <item name="colorPrimaryVariant">#111111</item>
+        <item name="colorOnPrimary">#EEEEEE</item>
+        <item name="android:windowBackground">#0D0D0D</item>
+        <item name="android:statusBarColor">#0D0D0D</item>
+        <item name="android:navigationBarColor">#0D0D0D</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- ResultPopupActivity용 다이얼로그 스타일 -->
+    <style name="Theme.Seoul2033Wiki.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="colorPrimary">#1E88E5</item>
+        <item name="colorPrimaryVariant">#1565C0</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="android:windowMinWidthMajor">70%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+    </style>
+</resources>

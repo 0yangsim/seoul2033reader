@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0D0D0D"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="60dp"
+        android:paddingBottom="36dp"
+        android:gravity="center_horizontal">
+
+        <!-- 타이틀 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="서울2033 리더"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/kopub_batang"
+            android:textColor="#EEEEEE"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="게임 화면 위에 플로팅 버튼을 표시하고\n버튼을 탭하면 나무위키로 연결합니다."
+            android:textSize="13sp"
+            android:fontFamily="@font/kopub_batang"
+            android:textColor="#666666"
+            android:gravity="center"
+            android:layout_marginBottom="40dp"/>
+
+        <!-- 상태 카드 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/status_card"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="18dp"
+            android:layout_marginBottom="40dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="상태"
+                android:textSize="10sp"
+                android:fontFamily="@font/kopub_batang"
+                android:textColor="#444444"
+                android:letterSpacing="0.12"
+                android:layout_marginBottom="10dp"/>
+
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="확인 중..."
+                android:textSize="14sp"
+                android:fontFamily="@font/kopub_batang"
+                android:textColor="#BBBBBB"
+                android:lineSpacingExtra="6dp"/>
+
+        </LinearLayout>
+
+        <!-- 권한 버튼 2개 가로 배치 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="14dp">
+
+            <Button
+                android:id="@+id/btnRequestOverlay"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="46dp"
+                android:text="오버레이 권한"
+                android:textColor="#BBBBBB"
+                android:textSize="13sp"
+                android:background="@drawable/btn_secondary"
+                android:stateListAnimator="@null"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btnRequestAccessibility"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="46dp"
+                android:text="접근성 서비스"
+                android:textColor="#BBBBBB"
+                android:textSize="13sp"
+                android:background="@drawable/btn_secondary"
+                android:stateListAnimator="@null"/>
+
+        </LinearLayout>
+
+        <!-- 오버레이 시작 (메인 버튼) -->
+        <Button
+            android:id="@+id/btnStart"
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:text="오버레이 시작"
+            android:textColor="#EEEEEE"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/btn_primary"
+            android:stateListAnimator="@null"
+            android:layout_marginBottom="10dp"/>
+
+        <!-- 중지 버튼 -->
+        <Button
+            android:id="@+id/btnStop"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:text="중지"
+            android:textColor="#999999"
+            android:textSize="13sp"
+            android:background="@drawable/btn_stop"
+            android:stateListAnimator="@null"
+            android:layout_marginBottom="36dp"/>
+
+        <!-- 구분선 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#191919"
+            android:layout_marginBottom="28dp"/>
+
+        <!-- 항목 관리 -->
+        <Button
+            android:id="@+id/btnManageItems"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:text="항목 관리"
+            android:textColor="#999999"
+            android:textSize="13sp"
+            android:background="@drawable/btn_manage"
+            android:stateListAnimator="@null"/>
+
+    </LinearLayout>
+</ScrollView>
