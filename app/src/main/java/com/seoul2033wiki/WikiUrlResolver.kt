@@ -61,7 +61,7 @@ object WikiUrlResolver {
         "온 에어 서울", "요리왕", "원 피스 쉽", "잠실 칼리파",
         "장미의 이름으로", "재건", "죄와 벌", "준비된 모험가",
         "준비된 전문가", "천공의 묵시록", "카지노 로얄", "프린세슘 메이커",
-        "한강 러닝", "핵겨울왕국", "황소너구리 왕국"
+        "한강 러닝", "핵겨울왕국", "황소너구리 왕국", "죽음을 배웁니다"
     )
 
     // 사용자 등록 확장팩은 런타임에 CustomItemManager.getExpansions(ctx)로 조회
@@ -292,8 +292,8 @@ object WikiUrlResolver {
         val lines = beforePage.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
         val storyTagIdx = lines.indexOfFirst { line ->
             line == "이야기" || line == "[이야기]" ||
-            line.contains(Regex("""\[이야기]""")) ||
-            line.startsWith("이야기")
+                    line.contains(Regex("""\[이야기]""")) ||
+                    line.startsWith("이야기")
         }
         val storyLine: String? = if (storyTagIdx >= 0) {
             val tagLine = lines[storyTagIdx]
@@ -384,9 +384,9 @@ object WikiUrlResolver {
             .filter { (key, _) ->
                 val cleanKey = normalize(key)
                 cleanKey.length >= 4 && (
-                    cleanInput.startsWith(cleanKey) ||
-                    cleanKey.startsWith(cleanInput) && cleanInput.length >= 4
-                )
+                        cleanInput.startsWith(cleanKey) ||
+                                cleanKey.startsWith(cleanInput) && cleanInput.length >= 4
+                        )
             }
             .minByOrNull { kotlin.math.abs(normalize(it.key).length - cleanInput.length) }
             ?.value
@@ -412,7 +412,7 @@ object WikiUrlResolver {
         val lines = cleaned.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
         val storyTagIdx = lines.indexOfFirst { line ->
             line == "이야기" || line == "[이야기]" ||
-            line.contains("[이야기]") || line.trimStart().startsWith("이야기")
+                    line.contains("[이야기]") || line.trimStart().startsWith("이야기")
         }
         val storyLine: String? = if (storyTagIdx >= 0) {
             val tagLine = lines[storyTagIdx]
@@ -444,7 +444,7 @@ object WikiUrlResolver {
             // 주요 스토리 인터셉트: 코마 등은 이야기 URL 대신 주요 스토리로
             val mainStoryHit = MAIN_STORY_REDIRECT_TITLES.firstOrNull { title ->
                 normalize(resolved).contains(normalize(title)) ||
-                normalize(rawTitle).contains(normalize(title))
+                        normalize(rawTitle).contains(normalize(title))
             }
             if (mainStoryHit != null) {
                 Log.d(TAG, "STEP0 주요 스토리 인터셉트: '$mainStoryHit'")
@@ -510,7 +510,7 @@ object WikiUrlResolver {
             // 주요 스토리 인터셉트: 시즌/레벨/이야기로 분류된 제목이어도 주요 스토리면 우선 처리
             val mainStoryHit3 = MAIN_STORY_REDIRECT_TITLES.firstOrNull { title ->
                 normalize(storyHit).contains(normalize(title)) ||
-                normalize(title).contains(normalize(storyHit))
+                        normalize(title).contains(normalize(storyHit))
             }
             if (mainStoryHit3 != null) {
                 Log.d(TAG, "STEP0-3 주요 스토리 인터셉트: '$mainStoryHit3'")

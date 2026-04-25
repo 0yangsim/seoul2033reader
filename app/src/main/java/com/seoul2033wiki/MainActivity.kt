@@ -1,6 +1,7 @@
 package com.seoul2033wiki
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -8,6 +9,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,17 +19,33 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnStart: Button
     private lateinit var btnStop: Button
     private lateinit var btnManageItems: Button
+    private lateinit var switchAutoStart: SwitchCompat
+
+    private lateinit var prefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        statusText               = findViewById(R.id.statusText)
-        btnRequestOverlay        = findViewById(R.id.btnRequestOverlay)
-        btnRequestAccessibility  = findViewById(R.id.btnRequestAccessibility)
-        btnStart                 = findViewById(R.id.btnStart)
-        btnStop                  = findViewById(R.id.btnStop)
-        btnManageItems           = findViewById(R.id.btnManageItems)
+        prefs = getSharedPreferences("settings", MODE_PRIVATE)
+
+        statusText              = findViewById(R.id.statusText)
+        btnRequestOverlay       = findViewById(R.id.btnRequestOverlay)
+        btnRequestAccessibility = findViewById(R.id.btnRequestAccessibility)
+        btnStart                = findViewById(R.id.btnStart)
+        btnStop                 = findViewById(R.id.btnStop)
+        btnManageItems          = findViewById(R.id.btnManageItems)
+        switchAutoStart         = findViewById(R.id.switchAutoStart)
+
+        // 저장된 설정 불러오기 (기본값 false)
+        switchAutoStart.isChecked = prefs.getBoolean(KEY_AUTO_START, false)
+
+        switchAutoStart.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean(KEY_AUTO_START, isChecked).apply()
+            val msg = if (isChecked) "서울2033 실행 시 자동으로 오버레이가 시작됩니다."
+            else "자동 시작이 꺼졌습니다."
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
 
         btnRequestOverlay.setOnClickListener       { requestOverlayPermission() }
         btnRequestAccessibility.setOnClickListener { requestAccessibilityPermission() }
@@ -85,5 +103,9 @@ class MainActivity : AppCompatActivity() {
     private fun stopOverlay() {
         stopService(Intent(this, OverlayService::class.java))
         Toast.makeText(this, "오버레이가 중지되었습니다.", Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        const val KEY_AUTO_START = "auto_start"
     }
 }

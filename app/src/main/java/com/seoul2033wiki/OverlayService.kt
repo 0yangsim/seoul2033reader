@@ -385,5 +385,6 @@ class OverlayService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         releaseAll()
+        Seoul2033AccessibilityService.notifyOverlayStopped()  // 추가
     }
 }

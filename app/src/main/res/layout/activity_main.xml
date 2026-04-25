@@ -43,7 +43,7 @@
             android:background="@drawable/status_card"
             android:paddingHorizontal="20dp"
             android:paddingVertical="18dp"
-            android:layout_marginBottom="40dp">
+            android:layout_marginBottom="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -64,6 +64,50 @@
                 android:fontFamily="@font/kopub_batang"
                 android:textColor="#BBBBBB"
                 android:lineSpacingExtra="6dp"/>
+
+        </LinearLayout>
+
+        <!-- 자동 시작 토글 카드 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/status_card"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="14dp"
+            android:layout_marginBottom="32dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="서울2033 실행 시 자동 시작"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/kopub_batang"
+                    android:textColor="#BBBBBB"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="게임 실행 시 오버레이를 자동으로 켭니다."
+                    android:textSize="11sp"
+                    android:fontFamily="@font/kopub_batang"
+                    android:textColor="#555555"
+                    android:layout_marginTop="2dp"/>
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchAutoStart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"/>
 
         </LinearLayout>
 
