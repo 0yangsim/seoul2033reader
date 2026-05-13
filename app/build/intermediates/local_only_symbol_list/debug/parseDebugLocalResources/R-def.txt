@@ -25,6 +25,7 @@ id btnStart
 id btnStop
 id overlayBtnText
 id statusText
+id switchAutoStart
 id tvTitle
 id tvType
 id tvUrl

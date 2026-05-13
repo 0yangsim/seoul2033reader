@@ -10,6 +10,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var switchAutoStart: SwitchCompat
 
     private lateinit var prefs: SharedPreferences
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         switchAutoStart.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean(KEY_AUTO_START, isChecked).apply()
             val msg = if (isChecked) "서울2033 실행 시 자동으로 오버레이가 시작됩니다."
-            else "자동 시작이 꺼졌습니다."
+                      else "자동 시작이 꺼졌습니다."
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
 
@@ -57,6 +62,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateStatus()
+        // 앱 실행 시 업데이트 확인 (백그라운드)
+        scope.launch { UpdateChecker.check(this@MainActivity) }
     }
 
     private fun updateStatus() {
