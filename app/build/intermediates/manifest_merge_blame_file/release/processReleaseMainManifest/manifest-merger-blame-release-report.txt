@@ -1,8 +1,8 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="com.seoul2033wiki"
-4    android:versionCode="4"
-5    android:versionName="1.0" >
+4    android:versionCode="5"
+5    android:versionName="1.1" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="29"
@@ -20,183 +20,186 @@
 16    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 16-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:9:5-89
 16-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:9:22-86
-17
-18    <permission
-18-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
-19        android:name="com.seoul2033wiki.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-19-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
-20        android:protectionLevel="signature" />
-20-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
-21
-22    <uses-permission android:name="com.seoul2033wiki.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-22-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
-22-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
-23
-24    <application
-24-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:11:5-65:19
-25        android:allowBackup="true"
-25-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:12:9-35
-26        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-26-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
-27        android:extractNativeLibs="true"
-28        android:icon="@mipmap/ic_launcher"
-28-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:13:9-43
-29        android:label="@string/app_name"
-29-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:14:9-41
-30        android:roundIcon="@mipmap/ic_launcher_round"
-30-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:15:9-54
-31        android:supportsRtl="true"
-31-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:16:9-35
-32        android:theme="@style/Theme.Seoul2033Wiki" >
-32-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:17:9-51
-33
-34        <!-- 메인 진입 Activity -->
-35        <activity
-35-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:20:9-27:20
-36            android:name="com.seoul2033wiki.MainActivity"
-36-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:21:13-41
-37            android:exported="true" >
-37-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:22:13-36
-38            <intent-filter>
-38-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:23:13-26:29
-39                <action android:name="android.intent.action.MAIN" />
-39-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:24:17-69
-39-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:24:25-66
-40
-41                <category android:name="android.intent.category.LAUNCHER" />
-41-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:25:17-77
-41-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:25:27-74
-42            </intent-filter>
-43        </activity>
-44
-45        <!-- 결과 팝업 Activity -->
-46        <activity
-46-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:30:9-33:65
-47            android:name="com.seoul2033wiki.ResultPopupActivity"
-47-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:31:13-48
-48            android:exported="false"
-48-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:32:13-37
-49            android:theme="@style/Theme.Seoul2033Wiki.Dialog" />
-49-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:33:13-62
-50
-51        <!-- 이야기/레벨/시즌패스/확장팩 항목 관리 Activity -->
-52        <activity
-52-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:36:9-39:37
-53            android:name="com.seoul2033wiki.CustomItemActivity"
-53-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:37:13-47
-54            android:exported="false"
-54-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:38:13-37
-55            android:label="항목 관리" />
-55-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:39:13-34
-56
-57        <!-- 오버레이 서비스 -->
-58        <service
-58-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:42:9-49:19
-59            android:name="com.seoul2033wiki.OverlayService"
-59-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:43:13-43
-60            android:exported="false"
-60-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:44:13-37
-61            android:foregroundServiceType="specialUse" >
-61-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:45:13-55
-62            <property
-62-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:46:13-48:43
-63                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-63-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:47:17-76
-64                android:value="overlay" />
-64-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:48:17-40
-65        </service>
-66
-67        <!-- Accessibility 서비스 -->
-68        <service
-68-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:52:9-63:19
-69            android:name="com.seoul2033wiki.Seoul2033AccessibilityService"
-69-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:53:13-58
-70            android:exported="true"
-70-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:54:13-36
-71            android:label="@string/accessibility_service_label"
-71-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:55:13-64
-72            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" >
-72-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:56:13-79
-73            <intent-filter>
-73-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:57:13-59:29
-74                <action android:name="android.accessibilityservice.AccessibilityService" />
-74-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:58:17-92
-74-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:58:25-89
-75            </intent-filter>
-76
-77            <meta-data
-77-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:60:13-62:72
-78                android:name="android.accessibilityservice"
-78-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:61:17-60
-79                android:resource="@xml/accessibility_service_config" />
-79-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:62:17-69
-80        </service>
-81
-82        <provider
-82-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
-83            android:name="androidx.startup.InitializationProvider"
-83-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
-84            android:authorities="com.seoul2033wiki.androidx-startup"
-84-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
-85            android:exported="false" >
-85-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
-86            <meta-data
-86-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
-87                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-87-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
-88                android:value="androidx.startup" />
-88-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
-89            <meta-data
-89-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\1d6633f3a4ceef4b12414eedd19d1274\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:29:13-31:52
-90                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-90-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\1d6633f3a4ceef4b12414eedd19d1274\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:30:17-78
-91                android:value="androidx.startup" />
-91-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\1d6633f3a4ceef4b12414eedd19d1274\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:31:17-49
-92            <meta-data
-92-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
-93                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-93-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
-94                android:value="androidx.startup" />
-94-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
-95        </provider>
-96
-97        <receiver
-97-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
-98            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-98-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
-99            android:directBootAware="false"
-99-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
-100            android:enabled="true"
-100-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
-101            android:exported="true"
-101-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
-102            android:permission="android.permission.DUMP" >
-102-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
-103            <intent-filter>
-103-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
-104                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-104-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
-104-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
-105            </intent-filter>
-106            <intent-filter>
-106-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
-107                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-107-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
-107-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
-108            </intent-filter>
-109            <intent-filter>
-109-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
-110                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-110-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
-110-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
-111            </intent-filter>
-112            <intent-filter>
-112-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
-113                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-113-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
-113-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
-114            </intent-filter>
-115        </receiver>
-116    </application>
-117
-118</manifest>
+17    <uses-permission android:name="android.permission.INTERNET" />
+17-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:10:5-67
+17-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:10:22-64
+18
+19    <permission
+19-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
+20        android:name="com.seoul2033wiki.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+20-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
+21        android:protectionLevel="signature" />
+21-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
+22
+23    <uses-permission android:name="com.seoul2033wiki.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+23-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
+23-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
+24
+25    <application
+25-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:11:5-65:19
+26        android:allowBackup="true"
+26-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:12:9-35
+27        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+27-->[androidx.core:core:1.12.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\5c30dba0f2ce1e85d818102cb60d2790\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
+28        android:extractNativeLibs="true"
+29        android:icon="@mipmap/ic_launcher"
+29-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:13:9-43
+30        android:label="@string/app_name"
+30-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:14:9-41
+31        android:roundIcon="@mipmap/ic_launcher_round"
+31-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:15:9-54
+32        android:supportsRtl="true"
+32-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:16:9-35
+33        android:theme="@style/Theme.Seoul2033Wiki" >
+33-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:17:9-51
+34
+35        <!-- 메인 진입 Activity -->
+36        <activity
+36-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:20:9-27:20
+37            android:name="com.seoul2033wiki.MainActivity"
+37-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:21:13-41
+38            android:exported="true" >
+38-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:22:13-36
+39            <intent-filter>
+39-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:23:13-26:29
+40                <action android:name="android.intent.action.MAIN" />
+40-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:24:17-69
+40-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:24:25-66
+41
+42                <category android:name="android.intent.category.LAUNCHER" />
+42-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:25:17-77
+42-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:25:27-74
+43            </intent-filter>
+44        </activity>
+45
+46        <!-- 결과 팝업 Activity -->
+47        <activity
+47-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:30:9-33:65
+48            android:name="com.seoul2033wiki.ResultPopupActivity"
+48-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:31:13-48
+49            android:exported="false"
+49-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:32:13-37
+50            android:theme="@style/Theme.Seoul2033Wiki.Dialog" />
+50-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:33:13-62
+51
+52        <!-- 이야기/레벨/시즌패스/확장팩 항목 관리 Activity -->
+53        <activity
+53-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:36:9-39:37
+54            android:name="com.seoul2033wiki.CustomItemActivity"
+54-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:37:13-47
+55            android:exported="false"
+55-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:38:13-37
+56            android:label="항목 관리" />
+56-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:39:13-34
+57
+58        <!-- 오버레이 서비스 -->
+59        <service
+59-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:42:9-49:19
+60            android:name="com.seoul2033wiki.OverlayService"
+60-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:43:13-43
+61            android:exported="false"
+61-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:44:13-37
+62            android:foregroundServiceType="specialUse" >
+62-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:45:13-55
+63            <property
+63-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:46:13-48:43
+64                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+64-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:47:17-76
+65                android:value="overlay" />
+65-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:48:17-40
+66        </service>
+67
+68        <!-- Accessibility 서비스 -->
+69        <service
+69-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:52:9-63:19
+70            android:name="com.seoul2033wiki.Seoul2033AccessibilityService"
+70-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:53:13-58
+71            android:exported="true"
+71-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:54:13-36
+72            android:label="@string/accessibility_service_label"
+72-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:55:13-64
+73            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" >
+73-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:56:13-79
+74            <intent-filter>
+74-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:57:13-59:29
+75                <action android:name="android.accessibilityservice.AccessibilityService" />
+75-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:58:17-92
+75-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:58:25-89
+76            </intent-filter>
+77
+78            <meta-data
+78-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:60:13-62:72
+79                android:name="android.accessibilityservice"
+79-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:61:17-60
+80                android:resource="@xml/accessibility_service_config" />
+80-->C:\Users\sihu0\Downloads\seoul2033_v21\seoul2033_v21\seoul2033\app\src\main\AndroidManifest.xml:62:17-69
+81        </service>
+82
+83        <provider
+83-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+84            android:name="androidx.startup.InitializationProvider"
+84-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
+85            android:authorities="com.seoul2033wiki.androidx-startup"
+85-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
+86            android:exported="false" >
+86-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
+87            <meta-data
+87-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+88                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+88-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+89                android:value="androidx.startup" />
+89-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\540643a3e4de5e9e257f5e38f97f397c\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+90            <meta-data
+90-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\1d6633f3a4ceef4b12414eedd19d1274\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:29:13-31:52
+91                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+91-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\1d6633f3a4ceef4b12414eedd19d1274\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:30:17-78
+92                android:value="androidx.startup" />
+92-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\1d6633f3a4ceef4b12414eedd19d1274\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:31:17-49
+93            <meta-data
+93-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+94                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+94-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+95                android:value="androidx.startup" />
+95-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+96        </provider>
+97
+98        <receiver
+98-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+99            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+99-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+100            android:directBootAware="false"
+100-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+101            android:enabled="true"
+101-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+102            android:exported="true"
+102-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+103            android:permission="android.permission.DUMP" >
+103-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+104            <intent-filter>
+104-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+105                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+105-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+105-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+106            </intent-filter>
+107            <intent-filter>
+107-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+108                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+108-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+108-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+109            </intent-filter>
+110            <intent-filter>
+110-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+111                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+111-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+111-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+112            </intent-filter>
+113            <intent-filter>
+113-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+114                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+114-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+114-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\sihu0\.gradle\caches\9.0.0\transforms\d296ab1aa9d99a606dee810281436f74\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+115            </intent-filter>
+116        </receiver>
+117    </application>
+118
+119</manifest>

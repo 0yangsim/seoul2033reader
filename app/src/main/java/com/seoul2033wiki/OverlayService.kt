@@ -212,6 +212,16 @@ class OverlayService : Service() {
                 bottomEntry != null && bottomEntry.type == EntryType.EXPANSION -> {
                     Log.d("Seoul2033Wiki", "확장팩 인식: '${bottomEntry.title}' → 섹션 탐지")
                     ExpansionEncounterResolver.resolve(rawText, bottomEntry.title, applicationContext)
+                        ?: run {
+                            // 섹션 매칭 실패 → 확장팩 인덱스 페이지로 폴백
+                            Log.d("Seoul2033Wiki", "확장팩 섹션 매칭 실패 → 인덱스 페이지로 폴백: '${bottomEntry.title}'")
+                            ResolvedEntry(
+                                title = bottomEntry.title,
+                                pageNum = "",
+                                type = EntryType.EXPANSION,
+                                url = ExpansionEncounterResolver.buildIndexUrl(bottomEntry.title)
+                            )
+                        }
                 }
                 else -> {
                     Log.d("Seoul2033Wiki", "풀체인 resolver 실행 (확장팩 제외)")

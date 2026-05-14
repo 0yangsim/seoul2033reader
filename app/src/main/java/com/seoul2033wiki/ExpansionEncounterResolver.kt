@@ -1375,7 +1375,7 @@ object ExpansionEncounterResolver {
         // ══════════════════════════════════════════════════════════════════
         // 미. 연. 시.
         // ══════════════════════════════════════════════════════════════════
-        "미. 연. 시." to listOf(
+        "미. 연. 시" to listOf(
 
             // 2.1.1 미나리 첫 만남
             "눈앞에서별이터지는것같습니다정체불명의충돌에당신은엉덩방아를찧고맙니다" to "첫 만남",
@@ -5333,6 +5333,16 @@ object ExpansionEncounterResolver {
             prev.indices.forEach { prev[it] = curr[it] }
         }
         return curr[b.length]
+    }
+
+    /**
+     * 확장팩 인덱스 페이지 URL (섹션 앵커 없음).
+     * 본문 매칭 실패 시 폴백으로 사용.
+     */
+    fun buildIndexUrl(expansion: String): String {
+        val basePath = URLEncoder.encode("서울 2033/랜덤 인카운터/$expansion", "UTF-8")
+            .replace("+", "%20")
+        return "$BASE/w/$basePath"
     }
 
     private fun buildExpansionUrl(expansion: String, anchor: String): String {

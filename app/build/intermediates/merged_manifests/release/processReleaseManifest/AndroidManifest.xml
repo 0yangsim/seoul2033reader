@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.seoul2033wiki"
-    android:versionCode="4"
-    android:versionName="1.0" >
+    android:versionCode="5"
+    android:versionName="1.1" >
 
     <uses-sdk
         android:minSdkVersion="29"
@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- specialUse 타입 FGS (Android 14+) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <permission
         android:name="com.seoul2033wiki.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
