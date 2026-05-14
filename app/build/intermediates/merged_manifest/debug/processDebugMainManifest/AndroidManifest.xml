@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.seoul2033wiki"
-    android:versionCode="3"
-    android:versionName="3.0" >
+    android:versionCode="4"
+    android:versionName="1.1" >
 
     <uses-sdk
         android:minSdkVersion="29"
@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- specialUse 타입 FGS (Android 14+) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <permission
         android:name="com.seoul2033wiki.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
@@ -30,6 +31,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:testOnly="true"
         android:theme="@style/Theme.Seoul2033Wiki" >
 
         <!-- 메인 진입 Activity -->
