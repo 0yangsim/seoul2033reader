@@ -17,8 +17,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -114,22 +112,14 @@ class OverlayService : Service() {
     }
 
     private fun isInDropZone(rawX: Float, rawY: Float): Boolean {
-        val metrics = resources.displayMetrics
-        val density = metrics.density
-        val centerX = metrics.widthPixels / 2f
-
-        // 내비게이션바 높이를 WindowInsetsCompat으로 읽음 (getIdentifier 불필요)
-        // dropZoneView가 윈도우에 추가된 상태이므로 해당 뷰의 insets를 활용
-        val navBarHeight = dropZoneView?.let { v ->
-            ViewCompat.getRootWindowInsets(v)
-                ?.getInsets(WindowInsetsCompat.Type.navigationBars())
-                ?.bottom ?: 0
-        } ?: 0
-
-        // 원 중심 Y = 전체 높이 - 내비게이션바 - 72dp(y offset) - 28dp(반지름)
-        val centerY = metrics.heightPixels - navBarHeight - (72 * density) - (28 * density)
-        // 판정 반지름: 시각적 원(28dp)과 동일하게 맞춤
-        val radius = 28 * density
+        val v = dropZoneView ?: return false
+        // getLocationOnScreen으로 뷰의 실제 화면 좌표를 직접 읽어
+        // 좌표계 변환 계산 없이 정확한 중심점을 구한다
+        val loc = IntArray(2)
+        v.getLocationOnScreen(loc)
+        val centerX = loc[0] + v.width / 2f
+        val centerY = loc[1] + v.height / 2f
+        val radius = v.width / 2f * 2.0f   // 시각적 원의 2배 범위
         val dx = rawX - centerX
         val dy = rawY - centerY
         return dx * dx + dy * dy <= radius * radius
@@ -207,10 +197,13 @@ class OverlayService : Service() {
                     true
                 }
                 MotionEvent.ACTION_UP -> {
-                    hideDropZone()
+                    // isInDropZone()이 dropZoneView를 참조하므로
+                    // hideDropZone() 보다 먼저 판정해야 한다
                     if (isDragging) {
+                        val inZone = isInDropZone(event.rawX, event.rawY)
+                        hideDropZone()
                         isDragging = false
-                        if (isInDropZone(event.rawX, event.rawY)) {
+                        if (inZone) {
                             // 드롭존에서 손 뗌 → 서비스 종료
                             stopSelf()
                         } else {
@@ -219,6 +212,7 @@ class OverlayService : Service() {
                             btnText.setTextColor(0xFFF5F0C8.toInt())
                         }
                     } else {
+                        hideDropZone()
                         // 드래그 없이 탭
                         v.performClick()
                         if (isCapturing) {
