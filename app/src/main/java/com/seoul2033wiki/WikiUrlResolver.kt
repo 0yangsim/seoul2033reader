@@ -230,19 +230,34 @@ object WikiUrlResolver {
         // STEP 1. "- 숫자 -" 패턴 탐색 (페이지 번호가 핵심 앵커)
         //   있음 → 페이지번호 앞 텍스트만 추출 → STEP 0 · STEP 2로
         //   없음 → 팝업 미표시
+        //
+        // ※ "38좌21-1" 같은 인게임 텍스트 속 하이픈 오매칭 방지:
+        //    1순위: 단독 줄에 "- 숫자 -" 형태인 줄 (가장 신뢰도 높음)
+        //    2순위: 앞뒤 공백·줄바꿈으로 둘러싸인 패턴
         // ────────────────────────────────────────────────────────────────────
-        val pagePattern = Regex("""[-–—ー.]\s*([\d\]?]+)\s*[-–—ー.]""")
-        val pageMatch = pagePattern.find(cleaned)
+        val textLines = cleaned.split("\n").map { it.trim() }
+        val pageLinePattern = Regex("""^[-–—ー.]\s*([\d\]?]+)\s*[-–—ー.]$""")
 
-        if (pageMatch == null) {
-            Log.d(TAG, "페이지 번호 없음 → null 반환 (팝업 미표시)")
-            return null
+        // 1순위: 단독 줄 매칭
+        val pageLineIdx = textLines.indexOfFirst { pageLinePattern.matches(it) }
+        val pageNum: String
+        val beforePage: String
+
+        if (pageLineIdx >= 0) {
+            val lineMatch = pageLinePattern.find(textLines[pageLineIdx])!!
+            pageNum = lineMatch.groupValues[1].replace("]", "1")
+            beforePage = textLines.take(pageLineIdx).joinToString("\n").trim()
+        } else {
+            // 2순위: 앞뒤 공백으로 둘러싸인 패턴 (줄바꿈 포함)
+            val pagePattern = Regex("""(?:^|(?<=\s))[-–—ー.]\s*([\d\]?]+)\s*[-–—ー.](?=\s|$)""", RegexOption.MULTILINE)
+            val pageMatch = pagePattern.find(cleaned)
+            if (pageMatch == null) {
+                Log.d(TAG, "페이지 번호 없음 → null 반환 (팝업 미표시)")
+                return null
+            }
+            pageNum = pageMatch.groupValues[1].replace("]", "1")
+            beforePage = cleaned.substring(0, pageMatch.range.first).trim()
         }
-
-        // ] → 1 치환, ? 는 그대로 유지 (숫자 미인식 표시)
-        val pageNum = pageMatch.groupValues[1].replace("]", "1")
-        // 페이지 번호 앞쪽 텍스트만 분석 (뒤는 인벤토리·UI 노이즈)
-        val beforePage = cleaned.substring(0, pageMatch.range.first).trim()
         Log.d(TAG, "페이지번호=$pageNum / 앞텍스트=[$beforePage]")
 
         // ────────────────────────────────────────────────────────────────────

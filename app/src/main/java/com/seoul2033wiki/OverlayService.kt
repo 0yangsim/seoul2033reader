@@ -36,15 +36,19 @@ class OverlayService : Service() {
 
     private val handler = Handler(Looper.getMainLooper())
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val channelId = "overlay_channel"
     private var isCapturing = false
+
+    companion object {
+        private const val NOTIFICATION_ID = 1
+        private const val CHANNEL_ID = "overlay_channel"
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        startForeground(1, buildNotification())
+        startForeground(NOTIFICATION_ID, buildNotification())
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         scope.launch { WikiUrlResolver.loadStoryLists(applicationContext) }
     }
@@ -69,6 +73,56 @@ class OverlayService : Service() {
         return START_NOT_STICKY
     }
 
+    // 드래그 종료 영역 오버레이 (하단에 반투명으로 표시)
+    private var dropZoneView: View? = null
+
+    private fun showDropZone() {
+        if (dropZoneView != null) return
+        val density = resources.displayMetrics.density
+        // 원형 X 버튼: 56dp 크기
+        val sizePx = (56 * density).toInt()
+        val view = TextView(this).apply {
+            text = "✕"
+            textSize = 22f
+            setTextColor(0xFFFFFFFF.toInt())
+            gravity = Gravity.CENTER
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(0xCC333333.toInt())
+                setStroke((2 * density).toInt(), 0xFFAAAAAA.toInt())
+            }
+        }
+        val params = WindowManager.LayoutParams(
+            sizePx, sizePx,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            y = (72 * density).toInt()  // 하단에서 72dp 위
+        }
+        dropZoneView = view
+        try { windowManager.addView(view, params) } catch (_: Exception) {}
+    }
+
+    private fun hideDropZone() {
+        dropZoneView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
+        dropZoneView = null
+    }
+
+    private fun isInDropZone(rawX: Float, rawY: Float): Boolean {
+        val metrics = resources.displayMetrics
+        val density = metrics.density
+        val centerX = metrics.widthPixels / 2f
+        // 원 중심: 하단에서 72dp + 원 반지름(28dp) = 100dp
+        val centerY = metrics.heightPixels - (100 * density)
+        val radius = 52 * density  // 판정 반지름을 원보다 약간 크게 (56dp/2 + 여유)
+        val dx = rawX - centerX
+        val dy = rawY - centerY
+        return dx * dx + dy * dy <= radius * radius
+    }
+
     private fun setupOverlay() {
         overlayView?.let { try { windowManager.removeView(it) } catch (_: Exception) {}; overlayView = null }
 
@@ -85,10 +139,10 @@ class OverlayService : Service() {
         ).apply { gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL; y = 80 }
 
         val btnText = newView.findViewById<TextView>(R.id.overlayBtnText)
-        // 기본 상태: 연노랑 텍스트
         btnText.setTextColor(0xFFF5F0C8.toInt())
         var initialX = 0; var initialY = 0
         var initialTouchX = 0f; var initialTouchY = 0f
+        var isDragging = false
 
         @android.annotation.SuppressLint("ClickableViewAccessibility")
         newView.isClickable = true
@@ -96,22 +150,68 @@ class OverlayService : Service() {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     initialX = params.x; initialY = params.y
-                    initialTouchX = event.rawX; initialTouchY = event.rawY; true
+                    initialTouchX = event.rawX; initialTouchY = event.rawY
+                    isDragging = false
+                    true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     params.x = initialX + (event.rawX - initialTouchX).toInt()
                     params.y = initialY + (event.rawY - initialTouchY).toInt()
-                    windowManager.updateViewLayout(newView, params); true
-                }
-                MotionEvent.ACTION_UP -> {
+                    windowManager.updateViewLayout(newView, params)
+
                     val moved = kotlin.math.abs(event.rawX - initialTouchX) > 10 ||
                             kotlin.math.abs(event.rawY - initialTouchY) > 10
-                    if (!moved) {
+                    if (moved && !isDragging) {
+                        isDragging = true
+                        showDropZone()
+                    }
+                    // 드롭존 진입 시 플로팅 버튼·X 원형 모두 강조
+                    if (isDragging) {
+                        val inZone = isInDropZone(event.rawX, event.rawY)
+                        if (inZone) {
+                            btnText.setBackgroundResource(R.drawable.overlay_btn_bg_active)
+                            btnText.setTextColor(0xFFFF4444.toInt())
+                            // X 원도 빨간색으로
+                            (dropZoneView as? TextView)?.apply {
+                                setTextColor(0xFFFF4444.toInt())
+                                (background as? GradientDrawable)?.apply {
+                                    setColor(0xCC3D0000.toInt())
+                                    setStroke((2 * resources.displayMetrics.density).toInt(), 0xFFFF4444.toInt())
+                                }
+                            }
+                        } else {
+                            btnText.setBackgroundResource(R.drawable.overlay_btn_bg)
+                            btnText.setTextColor(0xFFF5F0C8.toInt())
+                            // X 원 기본색으로 복귀
+                            (dropZoneView as? TextView)?.apply {
+                                setTextColor(0xFFFFFFFF.toInt())
+                                (background as? GradientDrawable)?.apply {
+                                    setColor(0xCC333333.toInt())
+                                    setStroke((2 * resources.displayMetrics.density).toInt(), 0xFFAAAAAA.toInt())
+                                }
+                            }
+                        }
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    hideDropZone()
+                    if (isDragging) {
+                        isDragging = false
+                        if (isInDropZone(event.rawX, event.rawY)) {
+                            // 드롭존에서 손 뗌 → 서비스 종료
+                            stopSelf()
+                        } else {
+                            // 드롭존 밖에서 손 뗌 → 버튼 스타일 복귀
+                            btnText.setBackgroundResource(R.drawable.overlay_btn_bg)
+                            btnText.setTextColor(0xFFF5F0C8.toInt())
+                        }
+                    } else {
+                        // 드래그 없이 탭
                         v.performClick()
                         if (isCapturing) {
                             Toast.makeText(this, "인식 중입니다. 잠깐만요...", Toast.LENGTH_SHORT).show()
                         } else if (!Seoul2033AccessibilityService.isAlive(this)) {
-                            // 앱 강제종료 등으로 접근성 서비스가 끊긴 경우 버튼에 경고 표시
                             btnText.text = "!"
                             btnText.setBackgroundResource(R.drawable.overlay_btn_bg_active)
                             btnText.setTextColor(0xFFFF4444.toInt())
@@ -120,7 +220,6 @@ class OverlayService : Service() {
                                 "접근성 서비스가 끊겼습니다.\n설정 → 접근성 → 서울2033 리더를 재활성화해주세요.",
                                 Toast.LENGTH_LONG
                             ).show()
-                            // 3초 후 버튼 복귀
                             handler.postDelayed({
                                 btnText.text = getString(R.string.btn_read)
                                 btnText.setBackgroundResource(R.drawable.overlay_btn_bg)
@@ -129,16 +228,12 @@ class OverlayService : Service() {
                         } else {
                             isCapturing = true
                             btnText.text = getString(R.string.btn_recognizing)
-                            // 인식중: 은색 테두리 + 흰 텍스트
                             btnText.setBackgroundResource(R.drawable.overlay_btn_bg_active)
                             btnText.setTextColor(0xFFFFFFFF.toInt())
-                            // 버튼 텍스트가 실제로 화면에 그려진 다음 프레임 이후 백그라운드 시작
-                            // → 렌더링 완료를 보장한 뒤 작업 시작해 버튼이 즉시 바뀌어 보이도록 함
                             btnText.post {
                                 scope.launch(Dispatchers.Default) {
                                     readAndResolve {
                                         btnText.text = getString(R.string.btn_read)
-                                        // 완료: 기본 스타일로 복귀
                                         btnText.setBackgroundResource(R.drawable.overlay_btn_bg)
                                         btnText.setTextColor(0xFFF5F0C8.toInt())
                                         isCapturing = false
@@ -157,7 +252,7 @@ class OverlayService : Service() {
             windowManager.addView(newView, params)
             handler.post { Toast.makeText(this, "Read 버튼이 화면 상단에 추가됐어요!", Toast.LENGTH_LONG).show() }
         } catch (e: Exception) {
-            handler.post { Toast.makeText(this, "버튼 추가 실패: ${e.message}", Toast.LENGTH_LONG).show() }
+            handler.post { Toast.makeText(this, "버튼 추가 실패: \${e.message}", Toast.LENGTH_LONG).show() }
         }
     }
 
@@ -375,22 +470,29 @@ class OverlayService : Service() {
 
     private fun releaseAll() {
         dismissPopup()
+        hideDropZone()
         overlayView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
         overlayView = null
         isCapturing = false
     }
 
     private fun createNotificationChannel() {
-        val ch = NotificationChannel(channelId, "오버레이 서비스", NotificationManager.IMPORTANCE_LOW)
+        val ch = NotificationChannel(CHANNEL_ID, "오버레이 서비스", NotificationManager.IMPORTANCE_MIN)
+        ch.setShowBadge(false)
         getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
     }
 
-    private fun buildNotification(): Notification =
-        NotificationCompat.Builder(this, channelId)
+    private fun buildNotification(): Notification {
+        // 포그라운드 서비스 실행을 위한 최소 알림.
+        // 종료는 알림 대신 플로팅 버튼을 하단으로 드래그해서 수행.
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("서울2033 리더 실행 중")
-            .setContentText("상단 Read 버튼을 눌러 나무위키 검색")
+            .setContentText("버튼을 아래로 드래그해서 종료")
             .setSmallIcon(android.R.drawable.ic_menu_search)
+            .setOngoing(true)
+            .setSilent(true)
             .build()
+    }
 
     override fun onDestroy() {
         super.onDestroy()

@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prefs: SharedPreferences
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -48,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         switchAutoStart.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean(KEY_AUTO_START, isChecked).apply()
             val msg = if (isChecked) "서울2033 실행 시 자동으로 오버레이가 시작됩니다."
-                      else "자동 시작이 꺼졌습니다."
+            else "자동 시작이 꺼졌습니다."
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
 
@@ -57,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         btnStart.setOnClickListener                { startOverlay() }
         btnStop.setOnClickListener                 { stopOverlay() }
         btnManageItems.setOnClickListener          { startActivity(Intent(this, CustomItemActivity::class.java)) }
+
     }
 
     override fun onResume() {
