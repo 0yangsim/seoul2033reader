@@ -17,6 +17,8 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -115,9 +117,19 @@ class OverlayService : Service() {
         val metrics = resources.displayMetrics
         val density = metrics.density
         val centerX = metrics.widthPixels / 2f
-        // 원 중심: 하단에서 72dp + 원 반지름(28dp) = 100dp
-        val centerY = metrics.heightPixels - (100 * density)
-        val radius = 52 * density  // 판정 반지름을 원보다 약간 크게 (56dp/2 + 여유)
+
+        // 내비게이션바 높이를 WindowInsetsCompat으로 읽음 (getIdentifier 불필요)
+        // dropZoneView가 윈도우에 추가된 상태이므로 해당 뷰의 insets를 활용
+        val navBarHeight = dropZoneView?.let { v ->
+            ViewCompat.getRootWindowInsets(v)
+                ?.getInsets(WindowInsetsCompat.Type.navigationBars())
+                ?.bottom ?: 0
+        } ?: 0
+
+        // 원 중심 Y = 전체 높이 - 내비게이션바 - 72dp(y offset) - 28dp(반지름)
+        val centerY = metrics.heightPixels - navBarHeight - (72 * density) - (28 * density)
+        // 판정 반지름: 시각적 원(28dp)과 동일하게 맞춤
+        val radius = 28 * density
         val dx = rawX - centerX
         val dy = rawY - centerY
         return dx * dx + dy * dy <= radius * radius
