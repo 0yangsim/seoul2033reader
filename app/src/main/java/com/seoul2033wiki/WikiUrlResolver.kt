@@ -487,30 +487,21 @@ object WikiUrlResolver {
         //    (예: 죄와 벌 본문의 "바운티 헌터") 오탐을 방지할 수 있다.
         //    뒤쪽에서 못 찾은 경우에만 전체를 탐색해 짧은 인카운터 텍스트도 커버한다.
         val allNonEmptyLines = cleaned.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
-        val tailNorm = normalize(allNonEmptyLines.takeLast(5).joinToString("\n"))
+        val tailNorm = normalize(allNonEmptyLines.takeLast(1).joinToString("\n"))
         val customExpansions0 = ctx?.let { CustomItemManager.getExpansions(it) } ?: emptySet()
         val allExpansionCandidates = EXPANSION_LIST + customExpansions0
 
-        // 2-a) 뒤쪽 5줄에서 탐색
-        val tailHit = allExpansionCandidates
+        // 2-a) 뒤쪽 1줄에서만 탐색 (전체 탐색 폴백 제거 — 가구/아이템 이름 오인식 방지)
+        val hardExpansionHit = allExpansionCandidates
             .filter { candidate ->
                 val cn = normalize(candidate)
                 cn.length >= 2 && tailNorm.contains(cn)
             }
             .maxByOrNull { normalize(it).length }
 
-        // 2-b) 뒤쪽에서 못 찾은 경우 전체 탐색 (폴백)
-        val hardExpansionHit = tailHit ?: allExpansionCandidates
-            .filter { candidate ->
-                val cn = normalize(candidate)
-                cn.length >= 2 && cleanedNorm.contains(cn)
-            }
-            .maxByOrNull { normalize(it).length }
-
         if (hardExpansionHit != null) {
-            val source = if (tailHit != null) "뒤쪽5줄" else "전체폴백"
             val isCustom = hardExpansionHit in customExpansions0
-            Log.d(TAG, "STEP0-2 ${if (isCustom) "사용자 등록" else "하드코딩"} 확장팩 매칭[$source]: '$hardExpansionHit'")
+            Log.d(TAG, "STEP0-2 ${if (isCustom) "사용자 등록" else "하드코딩"} 확장팩 매칭[뒤쪽1줄]: '$hardExpansionHit'")
             return ResolvedEntry(
                 title = hardExpansionHit, pageNum = pageNum,
                 type = EntryType.EXPANSION,
@@ -523,10 +514,11 @@ object WikiUrlResolver {
         val customLevels0   = ctx?.let { CustomItemManager.getLevels(it) } ?: emptySet()
         val customSeasons0  = ctx?.let { CustomItemManager.getSeasons(it) } ?: emptySet()
         val allStories = STORY_LIST + customStories0 + LEVEL_LIST + customLevels0 + SEASON_LIST + customSeasons0
+        // 확장팩과 동일하게 뒤쪽 1줄에서만 탐색 (가구/아이템 이름 오인식 방지)
         val storyHit = allStories
             .filter { candidate ->
                 val cn = normalize(candidate)
-                cn.length >= 4 && cleanedNorm.contains(cn)
+                cn.length >= 4 && tailNorm.contains(cn)
             }
             .maxByOrNull { normalize(it).length }
         if (storyHit != null) {
