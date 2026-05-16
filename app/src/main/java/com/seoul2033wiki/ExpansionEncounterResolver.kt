@@ -1226,6 +1226,7 @@ object ExpansionEncounterResolver {
         "물물 교환" to listOf(
 
             // 2.1 낯선 배낭
+            "길한가운데에서여행자들이서로의물건을교환하고있습니다아이오딘정제조금만더얹어주세요대신아두이노는어떠세요" to "낯선 배낭",
             "계속걸어가고있는데낯선배낭하나가눈에들어옵니다너무뜬금없이땅바닥에떨어져있는데요" to "낯선 배낭",
             "배낭안에들어있던것은책뿐만이아닙니다성냥한개비와보리차가담긴플라스틱주스통그리고바늘한개도들어있네요" to "낯선 배낭",
 
@@ -3016,6 +3017,8 @@ object ExpansionEncounterResolver {
 
             // 2.1 TV보는 집
             "여느때처럼폐허를수색하던당신은아늑해보이는집을발견하고문을엽니다" to "TV보는 집",
+            "TV에서는이방영되고있습니다" to "TV보는 집",
+            "TV화면의지직거림이주기적으로멈추며안내문을표시합니다" to "TV보는 집",
 
             // 2.2 PAS 스튜디오 서울방송국 시리즈
             "당신은TV에나온주소를보고허름한스튜디오앞에도착했습니다이런데에서PAS방송이송출중일거라곤상상도못했었" to "굳게 닫힌 문",
@@ -3034,7 +3037,8 @@ object ExpansionEncounterResolver {
             "으뜸과버금을발견했습니다전쟁전에가장유명했다던비디오테이프대여점입니다" to "으뜸과 버금",
             "낡은트렌치코트를입은비디오상인을발견했습니다코트안쪽에는수십개의VHS테이프가줄지어매달려있습니다" to "테이프 상인",
             "고소한냄새에이끌려발걸음을옮겨보니한장사치가주방장모자를쓰고자신의앞에줄을선사람들로부터음식을하나씩받는" to "마법 셰프",
-            "셰프를지적했을경우얼마후초라한행색의셰프와다시만난다" to "마법 셰프 후속"
+            "무슨일이있었나요왜이러고계세요" to "마법 셰프 후속",
+            "사람들이사기꾼이라며매질을하고제소중한전자레인지를빼앗아갔어요전재산을털어구한보물이었는데" to "마법 셰프 후속"
         ),
 
         // ══════════════════════════════════════════════════════════════════
@@ -3364,8 +3368,8 @@ object ExpansionEncounterResolver {
         "장미의 이름으로" to listOf(
 
             // 2.1 1일차 - 입장
+            "오늘은유난히거친하루였습니다방사능괴물쥐에게쫓기고진흙탕에서구르고시체를몇구뒤졌더니몸과마음이너덜너덜합니다" to "1일차",
             "서울의유일한대피소누구나쉬다갈수있는곳동대문역사공원역ddp로오시오" to "1일차",
-            "들어오실건가요" to "1일차",
             "전부이쪽에올려두시기바랍니다" to "1일차",
 
             // 2.1.1.1 필영 - 할머니 환자
@@ -3509,7 +3513,6 @@ object ExpansionEncounterResolver {
             // 2.1 풍력 발전기
             "구름이걷히자평소에는눈에띄지않던우뚝솟은원기둥형태의철탑이보입니다자세히보니아마말로만듣던풍력발전기인것같습니다" to "풍력 발전기",
             "철탑의꼭대기에도착" to "풍력 발전기",
-            "풍력발전기수리완료시" to "풍력 발전기",
 
             // 2.1.1 후속 인카운터
             "풍력발전기앞에서쌍둥이로보이는두사람이풍력발전기를보고선풍기인지바람개비인지싸우고있습니다" to "후속 인카운터(풍력 발전기)",
@@ -3581,6 +3584,10 @@ object ExpansionEncounterResolver {
             // 2.2 웨스턴 영어 마을 2
             "울창한숲길을걷던당신은문득기시감을느낍니다언제한번와본적이있는것같은데요" to "웨스턴 영어 마을 2",
             "영어마을이면아납치범에얽힌소동이있었던곳이군요" to "웨스턴 영어 마을 2",
+            "보안관장투움바가말을몰아다가옵니다아그때그바운티헌터아니신가" to "웨스턴 영어 마을 2",
+            "광장한가운데기다란장대가세워져있고그꼭대기에는사람의잘린목이매달려있습니다" to "웨스턴 영어 마을 2",
+            "포박된괴한이당신을노려봅니다내이름은봉골레나의친우버팔로윙의원수를갚으려했으나" to "웨스턴 영어 마을 2",
+            "자네가잡은그납치범이바로버팔로윙이었다네" to "웨스턴 영어 마을 2",
             "보안관들을물리쳤으나마을사람들이쉽게믿지못한다" to "웨스턴 영어 마을 2",
 
             // 2.3 불이 난 건물
@@ -5170,7 +5177,13 @@ object ExpansionEncounterResolver {
             }
         }
 
-        val cleanInput = normalize(rawText)
+        // ── 텍스트 분할 전략 ──────────────────────────────────────────────
+        // beforePage가 길어질수록 현재 화면 텍스트는 뒷부분에 있음.
+        // 1) 뒤 1000자: 확장팩/이야기 태그 + 현재 인카운터 본문 탐지 (우선)
+        // 2) 앞 1000자: 앞부분에 키가 등장하는 인카운터 커버 (fallback)
+        val rawNorm = normalize(rawText)
+        val backInput  = if (rawNorm.length > 1000) rawNorm.takeLast(1000) else rawNorm
+        val frontInput = if (rawNorm.length > 1000) rawNorm.take(1000) else rawNorm
 
         // knownExpansion이 있으면 해당 그룹 이름만 필터 Set으로 만들어 인덱스 결과를 걸러냄
         val groupNames: Set<String>? = if (knownExpansion != null) {
@@ -5178,21 +5191,28 @@ object ExpansionEncounterResolver {
         } else null
 
         // ── 1차: prefix 인덱스로 후보 추출 후 완전 포함 매칭 ────────────
-        val seen = HashSet<String>()  // "expansion::key"
-        var bestKey = ""; var bestAnchor = ""; var bestExpansion = ""
-
-        for (start in 0..cleanInput.length - PREFIX_LEN) {
-            val prefix = cleanInput.substring(start, start + PREFIX_LEN)
-            val bucket = prefixIndex[prefix] ?: continue
-            for ((expansion, key, anchor) in bucket) {
-                if (groupNames != null && normalize(expansion) !in groupNames) continue
-                val id = "$expansion::$key"
-                if (!seen.add(id)) continue
-                if (key.length >= 8 && cleanInput.contains(key) && key.length > bestKey.length) {
-                    bestKey = key; bestAnchor = anchor; bestExpansion = expansion
+        // 뒤 1000자 우선, 없으면 앞 1000자에서 재시도
+        fun exactMatch(input: String): Triple<String, String, String> {
+            val seen = HashSet<String>()
+            var bestKey = ""; var bestAnchor = ""; var bestExpansion = ""
+            for (start in 0..input.length - PREFIX_LEN) {
+                val prefix = input.substring(start, start + PREFIX_LEN)
+                val bucket = prefixIndex[prefix] ?: continue
+                for ((expansion, key, anchor) in bucket) {
+                    if (groupNames != null && normalize(expansion) !in groupNames) continue
+                    val id = "$expansion::$key"
+                    if (!seen.add(id)) continue
+                    if (key.length >= 8 && input.contains(key) && key.length > bestKey.length) {
+                        bestKey = key; bestAnchor = anchor; bestExpansion = expansion
+                    }
                 }
             }
+            return Triple(bestKey, bestAnchor, bestExpansion)
         }
+
+        var (bestKey, bestAnchor, bestExpansion) = exactMatch(backInput)
+        if (bestKey.isEmpty() && frontInput !== backInput)
+            exactMatch(frontInput).also { (k, a, e) -> if (k.isNotEmpty()) { bestKey = k; bestAnchor = a; bestExpansion = e } }
 
         if (bestKey.isNotEmpty()) {
             Log.d(TAG, "확장팩 완전포함 매칭: '$bestExpansion' > '$bestAnchor' (키=${bestKey.take(15)}...)")
@@ -5204,35 +5224,39 @@ object ExpansionEncounterResolver {
         }
 
         // ── 2차: suffix 인덱스로 절반 포함 매칭 ─────────────────────────
-        val halfSeen = HashSet<String>()
-        var hBestKey = ""; var hBestAnchor = ""; var hBestExpansion = ""
-
-        for (start in 0..cleanInput.length - PREFIX_LEN) {
-            val prefix = cleanInput.substring(start, start + PREFIX_LEN)
-            // prefix 인덱스로 전반부 포함 검사
-            val fBucket = prefixIndex[prefix] ?: emptyList()
-            for ((expansion, key, anchor) in fBucket) {
-                if (groupNames != null && normalize(expansion) !in groupNames) continue
-                if (key.length < 12) continue
-                val id = "f::$expansion::$key"
-                if (!halfSeen.add(id)) continue
-                val firstHalf = key.substring(0, key.length / 2)
-                if (firstHalf.length >= 6 && cleanInput.contains(firstHalf) && key.length > hBestKey.length) {
-                    hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
+        fun halfMatch(input: String): Triple<String, String, String> {
+            val halfSeen = HashSet<String>()
+            var hBestKey = ""; var hBestAnchor = ""; var hBestExpansion = ""
+            for (start in 0..input.length - PREFIX_LEN) {
+                val prefix = input.substring(start, start + PREFIX_LEN)
+                val fBucket = prefixIndex[prefix] ?: emptyList()
+                for ((expansion, key, anchor) in fBucket) {
+                    if (groupNames != null && normalize(expansion) !in groupNames) continue
+                    if (key.length < 12) continue
+                    val id = "f::$expansion::$key"
+                    if (!halfSeen.add(id)) continue
+                    val firstHalf = key.substring(0, key.length / 2)
+                    if (firstHalf.length >= 6 && input.contains(firstHalf) && key.length > hBestKey.length) {
+                        hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
+                    }
+                }
+                val sBucket = suffixIndex[prefix] ?: emptyList()
+                for ((expansion, key, anchor) in sBucket) {
+                    if (groupNames != null && normalize(expansion) !in groupNames) continue
+                    val id = "s::$expansion::$key"
+                    if (!halfSeen.add(id)) continue
+                    val secondHalf = key.substring(key.length / 2)
+                    if (secondHalf.length >= 6 && input.contains(secondHalf) && key.length > hBestKey.length) {
+                        hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
+                    }
                 }
             }
-            // suffix 인덱스로 후반부 포함 검사
-            val sBucket = suffixIndex[prefix] ?: emptyList()
-            for ((expansion, key, anchor) in sBucket) {
-                if (groupNames != null && normalize(expansion) !in groupNames) continue
-                val id = "s::$expansion::$key"
-                if (!halfSeen.add(id)) continue
-                val secondHalf = key.substring(key.length / 2)
-                if (secondHalf.length >= 6 && cleanInput.contains(secondHalf) && key.length > hBestKey.length) {
-                    hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
-                }
-            }
+            return Triple(hBestKey, hBestAnchor, hBestExpansion)
         }
+
+        var (hBestKey, hBestAnchor, hBestExpansion) = halfMatch(backInput)
+        if (hBestKey.isEmpty() && frontInput !== backInput)
+            halfMatch(frontInput).also { (k, a, e) -> if (k.isNotEmpty()) { hBestKey = k; hBestAnchor = a; hBestExpansion = e } }
 
         if (hBestKey.isNotEmpty()) {
             Log.d(TAG, "확장팩 절반포함 매칭: '$hBestExpansion' > '$hBestAnchor' (키=${hBestKey.take(15)}...)")
@@ -5246,23 +5270,28 @@ object ExpansionEncounterResolver {
         // ── 3차: 동일 후보들만 fuzzy 매칭 (전체 순회 없음) ───────────────
         data class FuzzyCandidate(val key: String, val anchor: String, val expansion: String, val score: Double)
 
-        val fuzzySeen = HashSet<String>()
-        val candidates = mutableListOf<FuzzyCandidate>()
-
-        for (start in 0..cleanInput.length - PREFIX_LEN) {
-            val prefix = cleanInput.substring(start, start + PREFIX_LEN)
-            val bucket = prefixIndex[prefix] ?: continue
-            for ((expansion, key, anchor) in bucket) {
-                if (groupNames != null && normalize(expansion) !in groupNames) continue
-                if (key.length < 8) continue
-                val id = "$expansion::$key"
-                if (!fuzzySeen.add(id)) continue
-                val score = fuzzyScore(cleanInput, key)
-                if (score >= FUZZY_THRESHOLD) candidates.add(FuzzyCandidate(key, anchor, expansion, score))
+        fun fuzzyMatch(input: String): FuzzyCandidate? {
+            val fuzzySeen = HashSet<String>()
+            val candidates = mutableListOf<FuzzyCandidate>()
+            for (start in 0..input.length - PREFIX_LEN) {
+                val prefix = input.substring(start, start + PREFIX_LEN)
+                val bucket = prefixIndex[prefix] ?: continue
+                for ((expansion, key, anchor) in bucket) {
+                    if (groupNames != null && normalize(expansion) !in groupNames) continue
+                    if (key.length < 8) continue
+                    val id = "$expansion::$key"
+                    if (!fuzzySeen.add(id)) continue
+                    val score = fuzzyScore(input, key)
+                    if (score >= FUZZY_THRESHOLD) candidates.add(FuzzyCandidate(key, anchor, expansion, score))
+                }
             }
+            return candidates.maxByOrNull { it.score }
         }
 
-        val fuzzyBest = candidates.maxByOrNull { it.score }
+        val fuzzyCandidates = mutableListOf<FuzzyCandidate>()
+        fuzzyMatch(backInput)?.let { fuzzyCandidates.add(it) }
+        if (frontInput !== backInput) fuzzyMatch(frontInput)?.let { fuzzyCandidates.add(it) }
+        val fuzzyBest = fuzzyCandidates.maxByOrNull { it.score }
 
         if (fuzzyBest != null) {
             Log.d(TAG, "확장팩 유사도 매칭: '${fuzzyBest.expansion}' > '${fuzzyBest.anchor}' (점수=${"%.2f".format(fuzzyBest.score)}, 키=${fuzzyBest.key.take(15)}...)")

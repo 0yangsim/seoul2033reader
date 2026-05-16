@@ -480,33 +480,41 @@ object WikiUrlResolver {
         // 2) 확장팩 이름 포함 매칭
         // 접근성 API는 오인식이 없으므로 최소 길이를 2자로 완화 (재건 등 짧은 이름 허용)
         // 하드코딩 확장팩 우선, 사용자 등록 확장팩도 동일하게 EXPANSION으로 처리
-        val hardExpansionHit = EXPANSION_LIST
+        //
+        // ※ 뒤쪽 5줄 우선 탐색 → 실패 시 전체 탐색 순서로 진행.
+        //    확장팩 제목은 페이지 번호 바로 앞에 표시되므로 마지막 줄 근처에 등장.
+        //    뒤쪽에서 먼저 찾으면 본문 중간에 다른 확장팩 이름이 언급된 경우
+        //    (예: 죄와 벌 본문의 "바운티 헌터") 오탐을 방지할 수 있다.
+        //    뒤쪽에서 못 찾은 경우에만 전체를 탐색해 짧은 인카운터 텍스트도 커버한다.
+        val allNonEmptyLines = cleaned.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
+        val tailNorm = normalize(allNonEmptyLines.takeLast(5).joinToString("\n"))
+        val customExpansions0 = ctx?.let { CustomItemManager.getExpansions(it) } ?: emptySet()
+        val allExpansionCandidates = EXPANSION_LIST + customExpansions0
+
+        // 2-a) 뒤쪽 5줄에서 탐색
+        val tailHit = allExpansionCandidates
+            .filter { candidate ->
+                val cn = normalize(candidate)
+                cn.length >= 2 && tailNorm.contains(cn)
+            }
+            .maxByOrNull { normalize(it).length }
+
+        // 2-b) 뒤쪽에서 못 찾은 경우 전체 탐색 (폴백)
+        val hardExpansionHit = tailHit ?: allExpansionCandidates
             .filter { candidate ->
                 val cn = normalize(candidate)
                 cn.length >= 2 && cleanedNorm.contains(cn)
             }
             .maxByOrNull { normalize(it).length }
+
         if (hardExpansionHit != null) {
-            Log.d(TAG, "STEP0-2 하드코딩 확장팩 매칭: '$hardExpansionHit'")
+            val source = if (tailHit != null) "뒤쪽5줄" else "전체폴백"
+            val isCustom = hardExpansionHit in customExpansions0
+            Log.d(TAG, "STEP0-2 ${if (isCustom) "사용자 등록" else "하드코딩"} 확장팩 매칭[$source]: '$hardExpansionHit'")
             return ResolvedEntry(
                 title = hardExpansionHit, pageNum = pageNum,
                 type = EntryType.EXPANSION,
                 url = buildUrl("랜덤 인카운터/$hardExpansionHit")
-            )
-        }
-        val customExpansions0 = ctx?.let { CustomItemManager.getExpansions(it) } ?: emptySet()
-        val customExpansionHit = customExpansions0
-            .filter { candidate ->
-                val cn = normalize(candidate)
-                cn.length >= 2 && cleanedNorm.contains(cn)
-            }
-            .maxByOrNull { normalize(it).length }
-        if (customExpansionHit != null) {
-            Log.d(TAG, "STEP0-2 사용자 등록 확장팩 매칭: '$customExpansionHit'")
-            return ResolvedEntry(
-                title = customExpansionHit, pageNum = pageNum,
-                type = EntryType.EXPANSION,
-                url = buildUrl("랜덤 인카운터/$customExpansionHit")
             )
         }
 
