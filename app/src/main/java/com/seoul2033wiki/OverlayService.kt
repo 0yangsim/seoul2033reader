@@ -44,17 +44,6 @@ class OverlayService : Service() {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "overlay_channel"
 
-        // 나무위키 다크모드 CSS 인젝션
-        private const val DARK_MODE_JS = """
-            (function() {
-                var style = document.createElement('style');
-                style.innerHTML = `
-                    html { filter: invert(1) hue-rotate(180deg) !important; }
-                    img, video, canvas, svg image { filter: invert(1) hue-rotate(180deg) !important; }
-                `;
-                document.head.appendChild(style);
-            })();
-        """
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -442,7 +431,7 @@ class OverlayService : Service() {
             if (showHint) {
                 // ── 힌트 텍스트 ───────────────────────────────────────────
                 root.addView(TextView(ctx).apply {
-                    text = hint ?: "현재 힌트 기능은 거의 업데이트 되지 않았습니다."
+                    text = hint ?: "기능 추가 예정"
                     textSize = 13f
                     setTextColor(0xFFD8D8D8.toInt())
                     typeface = AppFont.regular(ctx)
@@ -567,7 +556,7 @@ class OverlayService : Service() {
         }
 
         val popupW = (screenWidth * 0.92).toInt()
-        val popupH = (screenHeight * 0.72).toInt()
+        val popupH = (screenHeight * 0.5).toInt()
 
         val overlayParams = WindowManager.LayoutParams(
             popupW, popupH,
@@ -675,15 +664,9 @@ class OverlayService : Service() {
             settings.displayZoomControls = false
             settings.userAgentString =
                 "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36"
-            // 다크모드: Android 13+ 에서 네이티브 다크모드 적용 시도
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                settings.isAlgorithmicDarkeningAllowed = true
-            }
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, pageUrl: String?) {
                     super.onPageFinished(view, pageUrl)
-                    // 페이지 로딩 후 CSS invert 방식으로 다크모드 강제 적용
-                    view?.evaluateJavascript(DARK_MODE_JS, null)
                 }
                 override fun shouldOverrideUrlLoading(
                     view: WebView?,

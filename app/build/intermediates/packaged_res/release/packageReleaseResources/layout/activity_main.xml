@@ -25,10 +25,11 @@
             android:textColor="#EEEEEE"
             android:layout_marginBottom="8dp"/>
 
+        <!-- 설명 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="게임 화면 위에 플로팅 버튼을 표시하고\n버튼을 탭하면 나무위키로 연결합니다."
+            android:text="게임 화면 위에 플로팅 버튼을 표시하고&#10;버튼을 탭하면 나무위키로 연결합니다."
             android:textSize="13sp"
             android:fontFamily="@font/kopub_batang"
             android:textColor="#666666"
@@ -67,7 +68,51 @@
 
         </LinearLayout>
 
-        <!-- 자동 시작 토글 카드 -->
+        <!-- 자동 시작 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/status_card"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="14dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/kopub_batang"
+                    android:text="서울2033 실행 시 자동 시작"
+                    android:textColor="#BBBBBB"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/kopub_batang"
+                    android:text="게임 실행 시 오버레이를 자동으로 켭니다. (아래로 드래그하면 버튼을 끌 수 있습니다.)"
+                    android:textColor="#555555"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchAutoStart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"/>
+
+        </LinearLayout>
+
+        <!-- 힌트 바로 표시 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -87,7 +132,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="서울2033 실행 시 자동 시작"
+                    android:text="힌트 바로 표시"
                     android:textSize="14sp"
                     android:fontFamily="@font/kopub_batang"
                     android:textColor="#BBBBBB"/>
@@ -95,23 +140,23 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="게임 실행 시 오버레이를 자동으로 켭니다."
-                    android:textSize="11sp"
+                    android:layout_marginTop="2dp"
                     android:fontFamily="@font/kopub_batang"
+                    android:text="버튼 탭 후에 힌트를 바로 표시합니다. (현재 미완성)"
                     android:textColor="#555555"
-                    android:layout_marginTop="2dp"/>
+                    android:textSize="11sp" />
 
             </LinearLayout>
 
             <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/switchAutoStart"
+                android:id="@+id/switchHintDefault"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="false"/>
 
         </LinearLayout>
 
-        <!-- 권한 버튼 2개 가로 배치 -->
+        <!-- 권한 버튼 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -121,20 +166,20 @@
             <Button
                 android:id="@+id/btnRequestOverlay"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
                 android:text="오버레이 권한"
                 android:textColor="#BBBBBB"
                 android:textSize="13sp"
                 android:background="@drawable/btn_secondary"
-                android:stateListAnimator="@null"
-                android:layout_marginEnd="8dp"/>
+                android:stateListAnimator="@null"/>
 
             <Button
                 android:id="@+id/btnRequestAccessibility"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="46dp"
+                android:layout_weight="1"
                 android:text="접근성 서비스"
                 android:textColor="#BBBBBB"
                 android:textSize="13sp"
@@ -143,7 +188,7 @@
 
         </LinearLayout>
 
-        <!-- 오버레이 시작 (메인 버튼) -->
+        <!-- 시작 -->
         <Button
             android:id="@+id/btnStart"
             android:layout_width="match_parent"
@@ -156,7 +201,7 @@
             android:stateListAnimator="@null"
             android:layout_marginBottom="10dp"/>
 
-        <!-- 중지 버튼 -->
+        <!-- 중지 -->
         <Button
             android:id="@+id/btnStop"
             android:layout_width="match_parent"
@@ -187,4 +232,5 @@
             android:stateListAnimator="@null"/>
 
     </LinearLayout>
+
 </ScrollView>

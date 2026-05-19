@@ -112,10 +112,6 @@
         "source": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-main-32:\\font\\kopub_batang_medium.ttf"
     },
     {
-        "merged": "com.seoul2033wiki.app-release-31:/xml_accessibility_service_config.xml.flat",
-        "source": "com.seoul2033wiki.app-main-32:/xml/accessibility_service_config.xml"
-    },
-    {
         "merged": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-release-31:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
         "source": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-main-32:\\mipmap-anydpi-v26\\ic_launcher.xml"
     }
