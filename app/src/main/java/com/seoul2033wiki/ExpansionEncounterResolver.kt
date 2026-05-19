@@ -839,9 +839,8 @@ object ExpansionEncounterResolver {
             "홍찰리or최함찬이찾아와당신에대해안좋은생각을가지고있다는소문이돈다고알려준다" to "소문",
 
             // 2.3.5.1 홍찰리
-            "홍찰리나최함찬이찾아와개인적으로돈을빌려달라고한다" to "홍찰리",
-            "홍찰리의경우여동생에게통기타를사주고싶다고한다" to "홍찰리",
-            "어디에쓰려고순수한얼굴혹은험악한얼굴그러지말고말해봐" to "홍찰리",
+            "어쩐일인지당신에게홍찰리가조심스럽게찾아왔습니다무슨일이야" to "홍찰리",
+            "보스이런말씀드리기정말죄송하지만돈을조금빌릴수있을까헤서요홍찰리가당신의눈치를보며기어들어가는목소리로말합니다" to "홍찰리",
 
             // 2.3.5.2 최함찬
             "어쩐일인지당신에게최함찬이따로찾아왔습니다쭈뼛대는모습이평소그의모습과다릅니다" to "최함찬",
@@ -1564,9 +1563,9 @@ object ExpansionEncounterResolver {
             "저기둘다미안해요혹시우리미란이보면꼭좀알려줘요" to "밀라노와 Miran",
 
             // 4.6 밀라노와 전기장판
-            "밀라노가양이온전기장판을발명했다고한다" to "밀라노와 전기장판",
-            "밀라노가큰시장이있다며전기장판을팔러가자고합니다" to "밀라노와 전기장판",
-            "당신과밀라노는자리를깔고장사를시작한다" to "밀라노와 전기장판",
+            "양이온전기장판" to "밀라노와 전기장판",
+            "어이동지오토바이배기음사이로당신을부르는낯익은목소리가들려옵니다" to "밀라노와 전기장판",
+            "당신과밀라노는자리를깔고장사를시작합니다" to "밀라노와 전기장판",
             "목에헤드폰을건여자가급하게달려와숨을헐떡입니다" to "밀라노와 전기장판",
 
             // 4.7 밀라노와 심장 제세동기
@@ -1691,7 +1690,7 @@ object ExpansionEncounterResolver {
             "기술자들이레고로집을짓는바람에집주인은발바닥이아파서살수없다고하소연한다" to "알록달록한 집",
 
             // 2.3 드래곤
-            "드래곤이불을뿜는다" to "드래곤",
+            "인적하나없는조용한도로를지나는데어디선가쿵쿵소리와함께땅이울리기시작합니다" to "드래곤",
 
             // 2.4 미군과 기술자의 싸움
             "미군이화를내고기술자가당황하고있다" to "미군과 기술자의 싸움",
@@ -2042,6 +2041,12 @@ object ExpansionEncounterResolver {
             // 2.3.28 익숙한 얼굴들
             "공무원증이늘어나면서공무에점점익숙해지고있습니다" to "익숙한 얼굴들",
             "언젠가본적이있는몇몇공무원이으슥한곳으로향하는것을목격하게됩니다" to "익숙한 얼굴들",
+
+            // 2.3.28.1 다시 만난 중개인
+            "공무원증이더필요하진않으신가요희귀한물건을찾는고객들이좀있어요" to "다시 만난 중개인",
+
+            // 2.3.28.1.1 또 다시 만난 중개인
+            "공무원증이더필요하진않으신가요좋은거래가될것같은데요" to "또 다시 만난 중개인",
 
             // 2.4.2 연가
             "1년에낼수있는연가일수도늘었습니다사용하지않은연가가있다면그만큼수당으로받는다는군요" to "연가",
@@ -2515,7 +2520,10 @@ object ExpansionEncounterResolver {
             // 3.6 스키 대회
             "스키경기가진행되는쓰레기산에도착했습니다" to "스키 대회",
             // 3.7 축구 경기
-            "공략에앞서선수를출전시키기위해선그선수와친분이있어야한다" to "축구 경기",
+            "이제곧레알마님드리드와파리생고기제르망사이의경기가시작됩니다경기는5대5로이뤄지며공을손으로" to "축구 경기",
+            "오늘은서울림픽축구경기가있는날입니다축구는5대5로진행되며당신이직접레알마님드리드의팀원을뽑아야합니다" to "축구 경기",
+            "현재양팀스코어" to "축구 경기",
+            "경기의열기는한창더뜨거워지고있습니다양팀스코어" to "축구 경기",
             // 3.8 시상식
             "7개의경기가모두끝나고드디어폐막식입니다" to "시상식",
             "당신은서울림픽이시작된잠실주경기장으로돌아갑니다" to "시상식",
@@ -3237,7 +3245,8 @@ object ExpansionEncounterResolver {
             "당신이총알과집주인이준여러가지재료로맛있는수프를만둘자마을사람들이한둘씩찾아옵니다" to "돌로 만든 수프",
 
             // 3.7.1 후속
-            "안존스가고맙다고하면서당신에게스프를건네줍니다" to "후속 인카운터(돌로 만든 수프)",
+            "오호라유럽에전해져내려오는돌수프와유사하군나그네가솥에넣은물건은" to "후속 인카운터(돌로 만든 수프)",
+            "네총알한알로수프를만들어서마을사람과나눠먹었어요" to "후속 인카운터(돌로 만든 수프)",
 
             // 3.8 메밀꽃 필 무렵
             "쥐죽은듯고요하고한적한거리를따라걷다보니어디선가맛있는냄새가풍겨옵니다냄새를따라가보니파란트럭두대와오토바이한대가나란히서있습니다" to "메밀꽃 필 무렵",
@@ -5415,6 +5424,11 @@ object ExpansionEncounterResolver {
         return directMatch.ifEmpty { listOf(knownExpansion) }
     }
 
+
+    // ── 힌트 맵 ──────────────────────────────────────────────────────────────
+    // 확장팩별로 분리 관리. EncounterHints.kt 참조.
+    fun hint(expansion: String, anchor: String): String? = EncounterHints.getExpansion(expansion, anchor)
+
     fun resolve(rawText: String, knownExpansion: String? = null, ctx: android.content.Context? = null): ResolvedEntry? {
         // 패스스루 확장팩: 섹션 탐지 없이 확장팩 최상단 URL 반환
         // 1) 하드코딩 패스스루 목록
@@ -5464,7 +5478,7 @@ object ExpansionEncounterResolver {
                     if (groupNames != null && normalize(expansion) !in groupNames) continue
                     val id = "$expansion::$key"
                     if (!seen.add(id)) continue
-                    if (key.length >= 8 && input.contains(key) && key.length > bestKey.length) {
+                    if (key.length >= 8 && input.contains(key) && key.length >= bestKey.length) {
                         bestKey = key; bestAnchor = anchor; bestExpansion = expansion
                     }
                 }
@@ -5498,7 +5512,7 @@ object ExpansionEncounterResolver {
                     val id = "f::$expansion::$key"
                     if (!halfSeen.add(id)) continue
                     val firstHalf = key.substring(0, key.length / 2)
-                    if (firstHalf.length >= 6 && input.contains(firstHalf) && key.length > hBestKey.length) {
+                    if (firstHalf.length >= 6 && input.contains(firstHalf) && key.length >= hBestKey.length) {
                         hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
                     }
                 }
@@ -5508,7 +5522,7 @@ object ExpansionEncounterResolver {
                     val id = "s::$expansion::$key"
                     if (!halfSeen.add(id)) continue
                     val secondHalf = key.substring(key.length / 2)
-                    if (secondHalf.length >= 6 && input.contains(secondHalf) && key.length > hBestKey.length) {
+                    if (secondHalf.length >= 6 && input.contains(secondHalf) && key.length >= hBestKey.length) {
                         hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
                     }
                 }
@@ -5547,13 +5561,15 @@ object ExpansionEncounterResolver {
                     if (score >= FUZZY_THRESHOLD) candidates.add(FuzzyCandidate(key, anchor, expansion, score))
                 }
             }
-            return candidates.maxByOrNull { it.score }
+            val topScore = candidates.maxOfOrNull { it.score } ?: 0.0
+            return candidates.lastOrNull { it.score == topScore }
         }
 
         val fuzzyCandidates = mutableListOf<FuzzyCandidate>()
         fuzzyMatch(backInput)?.let { fuzzyCandidates.add(it) }
         if (frontInput !== backInput) fuzzyMatch(frontInput)?.let { fuzzyCandidates.add(it) }
-        val fuzzyBest = fuzzyCandidates.maxByOrNull { it.score }
+        val fuzzyTopScore = fuzzyCandidates.maxOfOrNull { it.score } ?: 0.0
+        val fuzzyBest = fuzzyCandidates.lastOrNull { it.score == fuzzyTopScore }
 
         if (fuzzyBest != null) {
             Log.d(TAG, "확장팩 유사도 매칭: '${fuzzyBest.expansion}' > '${fuzzyBest.anchor}' (점수=${"%.2f".format(fuzzyBest.score)}, 키=${fuzzyBest.key.take(15)}...)")

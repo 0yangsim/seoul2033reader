@@ -222,12 +222,18 @@ object ActiveEncounterResolver {
      * @param rawText OCR 원문
      * @return 매칭된 ResolvedEntry, 없으면 null
      */
+
+    // ── 힌트 맵 ──────────────────────────────────────────────────────────────
+    // 앵커명 → 짧은 공략 힌트. 없으면 null (URL 표시).
+    // EncounterHints.kt 에 일괄 관리하므로 여기서는 위임만 한다.
+    fun hint(anchor: String): String? = EncounterHints.getActive(anchor)
+
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
 
         val matched = ENCOUNTER_MAP
             .filter { (key, _) -> key.length >= 8 && cleanInput.contains(key) }
-            .maxByOrNull { (key, _) -> key.length }
+            .let { hits -> val max = hits.maxOfOrNull { (k, _) -> k.length } ?: 0; hits.lastOrNull { (k, _) -> k.length == max } }
 
         if (matched == null) {
             Log.d(TAG, "액티브 인카운터 매칭 실패")

@@ -17,6 +17,10 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -30,10 +34,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class OverlayService : Service() {
-
     private lateinit var windowManager: WindowManager
     private var overlayView: View? = null
-
     private val handler = Handler(Looper.getMainLooper())
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var isCapturing = false
@@ -41,6 +43,18 @@ class OverlayService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "overlay_channel"
+
+        // 나무위키 다크모드 CSS 인젝션
+        private const val DARK_MODE_JS = """
+            (function() {
+                var style = document.createElement('style');
+                style.innerHTML = `
+                    html { filter: invert(1) hue-rotate(180deg) !important; }
+                    img, video, canvas, svg image { filter: invert(1) hue-rotate(180deg) !important; }
+                `;
+                document.head.appendChild(style);
+            })();
+        """
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -73,13 +87,12 @@ class OverlayService : Service() {
         return START_NOT_STICKY
     }
 
-    // 드래그 종료 영역 오버레이 (하단에 반투명으로 표시)
+    // ── 드래그 종료 영역 오버레이 ────────────────────────────────────────────
     private var dropZoneView: View? = null
 
     private fun showDropZone() {
         if (dropZoneView != null) return
         val density = resources.displayMetrics.density
-        // 원형 X 버튼: 56dp 크기
         val sizePx = (56 * density).toInt()
         val view = TextView(this).apply {
             text = "✕"
@@ -100,7 +113,7 @@ class OverlayService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            y = (72 * density).toInt()  // 하단에서 72dp 위
+            y = (72 * density).toInt()
         }
         dropZoneView = view
         try { windowManager.addView(view, params) } catch (_: Exception) {}
@@ -113,13 +126,11 @@ class OverlayService : Service() {
 
     private fun isInDropZone(rawX: Float, rawY: Float): Boolean {
         val v = dropZoneView ?: return false
-        // getLocationOnScreen으로 뷰의 실제 화면 좌표를 직접 읽어
-        // 좌표계 변환 계산 없이 정확한 중심점을 구한다
         val loc = IntArray(2)
         v.getLocationOnScreen(loc)
         val centerX = loc[0] + v.width / 2f
         val centerY = loc[1] + v.height / 2f
-        val radius = v.width / 2f * 2.0f   // 시각적 원의 2배 범위
+        val radius = v.width / 2f * 2.0f
         val dx = rawX - centerX
         val dy = rawY - centerY
         return dx * dx + dy * dy <= radius * radius
@@ -142,6 +153,7 @@ class OverlayService : Service() {
 
         val btnText = newView.findViewById<TextView>(R.id.overlayBtnText)
         btnText.setTextColor(0xFFF5F0C8.toInt())
+
         var initialX = 0; var initialY = 0
         var initialTouchX = 0f; var initialTouchY = 0f
         var isDragging = false
@@ -160,20 +172,17 @@ class OverlayService : Service() {
                     params.x = initialX + (event.rawX - initialTouchX).toInt()
                     params.y = initialY + (event.rawY - initialTouchY).toInt()
                     windowManager.updateViewLayout(newView, params)
-
                     val moved = kotlin.math.abs(event.rawX - initialTouchX) > 10 ||
                             kotlin.math.abs(event.rawY - initialTouchY) > 10
                     if (moved && !isDragging) {
                         isDragging = true
                         showDropZone()
                     }
-                    // 드롭존 진입 시 플로팅 버튼·X 원형 모두 강조
                     if (isDragging) {
                         val inZone = isInDropZone(event.rawX, event.rawY)
                         if (inZone) {
                             btnText.setBackgroundResource(R.drawable.overlay_btn_bg_active)
                             btnText.setTextColor(0xFFFF4444.toInt())
-                            // X 원도 빨간색으로
                             (dropZoneView as? TextView)?.apply {
                                 setTextColor(0xFFFF4444.toInt())
                                 (background as? GradientDrawable)?.apply {
@@ -184,7 +193,6 @@ class OverlayService : Service() {
                         } else {
                             btnText.setBackgroundResource(R.drawable.overlay_btn_bg)
                             btnText.setTextColor(0xFFF5F0C8.toInt())
-                            // X 원 기본색으로 복귀
                             (dropZoneView as? TextView)?.apply {
                                 setTextColor(0xFFFFFFFF.toInt())
                                 (background as? GradientDrawable)?.apply {
@@ -197,23 +205,18 @@ class OverlayService : Service() {
                     true
                 }
                 MotionEvent.ACTION_UP -> {
-                    // isInDropZone()이 dropZoneView를 참조하므로
-                    // hideDropZone() 보다 먼저 판정해야 한다
                     if (isDragging) {
                         val inZone = isInDropZone(event.rawX, event.rawY)
                         hideDropZone()
                         isDragging = false
                         if (inZone) {
-                            // 드롭존에서 손 뗌 → 서비스 종료
                             stopSelf()
                         } else {
-                            // 드롭존 밖에서 손 뗌 → 버튼 스타일 복귀
                             btnText.setBackgroundResource(R.drawable.overlay_btn_bg)
                             btnText.setTextColor(0xFFF5F0C8.toInt())
                         }
                     } else {
                         hideDropZone()
-                        // 드래그 없이 탭
                         v.performClick()
                         if (isCapturing) {
                             Toast.makeText(this, "인식 중입니다. 잠깐만요...", Toast.LENGTH_SHORT).show()
@@ -258,12 +261,11 @@ class OverlayService : Service() {
             windowManager.addView(newView, params)
             handler.post { Toast.makeText(this, "Read 버튼이 화면 상단에 추가됐어요!", Toast.LENGTH_LONG).show() }
         } catch (e: Exception) {
-            handler.post { Toast.makeText(this, "버튼 추가 실패: \${e.message}", Toast.LENGTH_LONG).show() }
+            handler.post { Toast.makeText(this, "버튼 추가 실패: ${e.message}", Toast.LENGTH_LONG).show() }
         }
     }
 
     // ── 텍스트 수집 및 매칭 ────────────────────────────────────────────────────
-
     private suspend fun readAndResolve(onDone: () -> Unit) {
         val accessibility = if (Seoul2033AccessibilityService.isAlive(this@OverlayService))
             Seoul2033AccessibilityService.instance else null
@@ -278,12 +280,9 @@ class OverlayService : Service() {
             }
             return
         }
-
-        // extractGameText()는 AccessibilityNodeInfo를 읽으므로 메인 스레드에서 실행
         val rawText = withContext(Dispatchers.Main) {
             accessibility.extractGameText()
         }
-
         if (rawText.isNullOrBlank()) {
             withContext(Dispatchers.Main) {
                 Toast.makeText(
@@ -295,14 +294,11 @@ class OverlayService : Service() {
             }
             return
         }
-
         val lineCount = rawText.lines().count { it.isNotBlank() }
         Log.d("Seoul2033Wiki", "수집 텍스트 (${lineCount}줄):\n$rawText")
 
-        // ── 무거운 탐색 연산: 백그라운드(Default) 스레드에서 실행 ──────────
         val entry = withContext(Dispatchers.Default) {
             val bottomEntry = WikiUrlResolver.resolve(rawText, applicationContext)
-
             when {
                 bottomEntry != null
                         && bottomEntry.type != EntryType.BASIC
@@ -314,7 +310,6 @@ class OverlayService : Service() {
                     Log.d("Seoul2033Wiki", "확장팩 인식: '${bottomEntry.title}' → 섹션 탐지")
                     ExpansionEncounterResolver.resolve(rawText, bottomEntry.title, applicationContext)
                         ?: run {
-                            // 섹션 매칭 실패 → 확장팩 인덱스 페이지로 폴백
                             Log.d("Seoul2033Wiki", "확장팩 섹션 매칭 실패 → 인덱스 페이지로 폴백: '${bottomEntry.title}'")
                             ResolvedEntry(
                                 title = bottomEntry.title,
@@ -333,8 +328,6 @@ class OverlayService : Service() {
                 }
             }
         }
-
-        // ── 결과 처리: 메인 스레드로 복귀 ────────────────────────────────
         withContext(Dispatchers.Main) {
             if (entry != null) {
                 showResultPopup(entry)
@@ -349,14 +342,35 @@ class OverlayService : Service() {
         }
     }
 
-    // ── 오버레이 팝업 ────────────────────────────────────────────────────────────
+    // ── 결과 팝업 ────────────────────────────────────────────────────────────
     private var popupView: View? = null
 
-    @android.annotation.SuppressLint("ClickableViewAccessibility")
+    private fun getHint(entry: ResolvedEntry): String? = when (entry.type) {
+        EntryType.EXPANSION_ENCOUNTER -> {
+            val dash = entry.title.indexOf(" - ")
+            if (dash >= 0) ExpansionEncounterResolver.hint(
+                entry.title.substring(0, dash),
+                entry.title.substring(dash + 3)
+            ) else null
+        }
+        EntryType.BASIC_ENCOUNTER     -> BasicEncounterResolver.hint(entry.title)
+        EntryType.ACTIVE_ENCOUNTER    -> ActiveEncounterResolver.hint(entry.title)
+        EntryType.HARD_MODE_ENCOUNTER -> HardModeEncounterResolver.hint(entry.title)
+        EntryType.MAIN_STORY          -> MainStoryEncounterResolver.hint(entry.title)
+        else -> null
+    }
+
     private fun showResultPopup(entry: ResolvedEntry) {
+        val hint = getHint(entry)
+        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
+        val showHintImmediately = prefs.getBoolean(MainActivity.KEY_HINT_DEFAULT, false)
+        showPopupInternal(entry = entry, hint = hint, showHint = showHintImmediately)
+    }
+
+    @android.annotation.SuppressLint("ClickableViewAccessibility")
+    private fun showPopupInternal(entry: ResolvedEntry, hint: String?, showHint: Boolean) {
         handler.post {
             dismissPopup()
-
             val ctx = this
             val metrics = resources.displayMetrics
             val screenWidth = metrics.widthPixels
@@ -370,48 +384,93 @@ class OverlayService : Service() {
                     shape = GradientDrawable.RECTANGLE
                     setColor(0xF0101010.toInt())
                     cornerRadius = 18 * density
-                    setStroke((1.5f * density).toInt(), 0xFFC0C0C0.toInt())  // 은색 테두리
+                    setStroke((1.5f * density).toInt(), 0xFFC0C0C0.toInt())
                 }
                 elevation = 24 * density
             }
 
-            root.addView(TextView(ctx).apply {
+            // ── 타입 라벨 + 힌트 버튼 가로 행 ────────────────────────────
+            val headerRow = LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+            }
+            headerRow.addView(TextView(ctx).apply {
                 text = getString(R.string.label_type, entry.type.label)
                 textSize = 11f
-                setTextColor(0xFFC8A84B.toInt())  // 골드
+                setTextColor(0xFFC8A84B.toInt())
                 typeface = AppFont.regular(ctx)
-            }, LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
+            }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+
+            // 힌트 버튼: 힌트 있을 때만 표시
+            if (hint != null) {
+                headerRow.addView(TextView(ctx).apply {
+                    text = if (showHint) "힌트 끄기" else "힌트 보기"
+                    textSize = 11f
+                    setTextColor(if (showHint) 0xFFAAAAAA.toInt() else 0xFFE6C15A.toInt())
+                    val hPad = (10 * density).toInt()
+                    val vPad = (4 * density).toInt()
+                    setPadding(hPad, vPad, hPad, vPad)
+                    background = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        setColor(0xFF2A2A2A.toInt())
+                        cornerRadius = 10 * density
+                        setStroke((1 * density).toInt(), 0xFF555555.toInt())
+                    }
+                    setOnClickListener { showPopupInternal(entry, hint, !showHint) }
+                }, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ))
+            }
+
+            root.addView(headerRow, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply { bottomMargin = (4 * density).toInt() })
 
+            // ── 제목 ───────────────────────────────────────────────────────
             root.addView(TextView(ctx).apply {
                 text = entry.title
                 textSize = 18f
-                setTextColor(0xFFEEEEEE.toInt())  // 밝은 흰색
+                setTextColor(0xFFEEEEEE.toInt())
                 typeface = AppFont.bold(ctx)
             }, LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = (4 * density).toInt() })
+            ).apply { bottomMargin = if (showHint) (12 * density).toInt() else (4 * density).toInt() })
 
-            root.addView(TextView(ctx).apply {
-                text = entry.url
-                textSize = 11f
-                setTextColor(0xFF888888.toInt())  // 회색
-                typeface = AppFont.regular(ctx)
-                maxLines = 2
-                ellipsize = TextUtils.TruncateAt.END
-            }, LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = (16 * density).toInt() })
+            if (showHint) {
+                // ── 힌트 텍스트 ───────────────────────────────────────────
+                root.addView(TextView(ctx).apply {
+                    text = hint ?: "현재 힌트 기능은 거의 업데이트 되지 않았습니다."
+                    textSize = 13f
+                    setTextColor(0xFFD8D8D8.toInt())
+                    typeface = AppFont.regular(ctx)
+                }, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = (16 * density).toInt() })
+            } else {
+                // ── URL 미리보기 ──────────────────────────────────────────
+                root.addView(TextView(ctx).apply {
+                    text = entry.url
+                    textSize = 11f
+                    setTextColor(0xFF888888.toInt())
+                    typeface = AppFont.regular(ctx)
+                    maxLines = 2
+                    ellipsize = TextUtils.TruncateAt.END
+                }, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = (16 * density).toInt() })
+            }
 
+            // ── 버튼 행: 브라우저에서 열기 / 팝업으로 열기 ────────────────
             val btnRow = LinearLayout(ctx).apply { orientation = LinearLayout.HORIZONTAL }
 
             btnRow.addView(Button(ctx).apply {
-                text = "나무위키에서 열기"
-                textSize = 14f
+                text = "브라우저에서 열기"
+                textSize = 13f
                 setTextColor(0xFF101010.toInt())
                 background = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
@@ -429,16 +488,19 @@ class OverlayService : Service() {
             })
 
             btnRow.addView(Button(ctx).apply {
-                text = "닫기"
-                textSize = 14f
-                setTextColor(0xFFAAAAAA.toInt())
+                text = "팝업으로 열기"
+                textSize = 13f
+                setTextColor(0xFFE6C15A.toInt())
                 background = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
                     setColor(0xFF2A2A2A.toInt())
                     cornerRadius = 24 * density
                     setStroke((1 * density).toInt(), 0xFF555555.toInt())
                 }
-                setOnClickListener { dismissPopup() }
+                setOnClickListener {
+                    dismissPopup()
+                    showWebOverlay(entry.url)
+                }
             }, LinearLayout.LayoutParams(0, (48 * density).toInt(), 1f))
 
             root.addView(btnRow, LinearLayout.LayoutParams(
@@ -474,8 +536,183 @@ class OverlayService : Service() {
         popupView = null
     }
 
+    // ── 오버레이 WebView ─────────────────────────────────────────────────────
+    private var webOverlayView: View? = null
+    private var webOverlayParams: WindowManager.LayoutParams? = null
+
+    private fun dismissWebOverlay() {
+        webOverlayView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
+        webOverlayView = null
+        webOverlayParams = null
+    }
+
+    @android.annotation.SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
+    private fun showWebOverlay(url: String) {
+        dismissWebOverlay()
+        val ctx = this
+        val metrics = resources.displayMetrics
+        val density = metrics.density
+        val screenWidth = metrics.widthPixels
+        val screenHeight = metrics.heightPixels
+
+        val root = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                setColor(0xF5101010.toInt())
+                cornerRadius = 16 * density
+                setStroke((1 * density).toInt(), 0xFF444444.toInt())
+            }
+            elevation = 32 * density
+        }
+
+        val popupW = (screenWidth * 0.92).toInt()
+        val popupH = (screenHeight * 0.72).toInt()
+
+        val overlayParams = WindowManager.LayoutParams(
+            popupW, popupH,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            PixelFormat.TRANSLUCENT
+        ).apply { gravity = Gravity.CENTER }
+
+        webOverlayParams = overlayParams
+
+        // ── 상단 바 (드래그 핸들 겸용) ───────────────────────────────────
+        var dragInitX = 0; var dragInitY = 0
+        var dragTouchX = 0f; var dragTouchY = 0f
+
+        val topBar = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            val vPad = (12 * density).toInt()
+            val hPad = (14 * density).toInt()
+            setPadding(hPad, vPad, hPad, vPad)
+            gravity = Gravity.CENTER_VERTICAL
+            // 드래그 핸들임을 시각적으로 표시
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                setColor(0xFF1A1A1A.toInt())
+                // 상단 모서리만 둥글게
+                cornerRadii = floatArrayOf(
+                    16 * density, 16 * density,   // top-left
+                    16 * density, 16 * density,   // top-right
+                    0f, 0f,                        // bottom-right
+                    0f, 0f                         // bottom-left
+                )
+            }
+        }
+
+        // 드래그 핸들 아이콘 (≡ 형태)
+        topBar.addView(TextView(ctx).apply {
+            text = "⠿"
+            textSize = 14f
+            setTextColor(0xFF555555.toInt())
+            val rPad = (8 * density).toInt()
+            setPadding(0, 0, rPad, 0)
+        }, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ))
+
+        topBar.addView(TextView(ctx).apply {
+            text = url.removePrefix("https://").take(48)
+            textSize = 11f
+            setTextColor(0xFF777777.toInt())
+            typeface = AppFont.regular(ctx)
+            maxLines = 1
+            ellipsize = TextUtils.TruncateAt.END
+        }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+
+        topBar.addView(TextView(ctx).apply {
+            text = "✕"
+            textSize = 15f
+            setTextColor(0xFF888888.toInt())
+            val p = (8 * density).toInt()
+            setPadding(p, p, p, p)
+            setOnClickListener { dismissWebOverlay() }
+        }, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ))
+
+        // 상단 바 터치로 팝업 전체 드래그
+        topBar.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    dragInitX = overlayParams.x
+                    dragInitY = overlayParams.y
+                    dragTouchX = event.rawX
+                    dragTouchY = event.rawY
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    overlayParams.x = dragInitX + (event.rawX - dragTouchX).toInt()
+                    overlayParams.y = dragInitY + (event.rawY - dragTouchY).toInt()
+                    try { windowManager.updateViewLayout(root, overlayParams) } catch (_: Exception) {}
+                    true
+                }
+                else -> false
+            }
+        }
+
+        root.addView(topBar, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ))
+
+        // ── 구분선 ────────────────────────────────────────────────────────
+        root.addView(View(ctx).apply {
+            setBackgroundColor(0xFF2A2A2A.toInt())
+        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (1 * density).toInt()))
+
+        // ── WebView ───────────────────────────────────────────────────────
+        val webView = WebView(ctx).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.useWideViewPort = true
+            settings.loadWithOverviewMode = true
+            settings.builtInZoomControls = true
+            settings.displayZoomControls = false
+            settings.userAgentString =
+                "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36"
+            // 다크모드: Android 13+ 에서 네이티브 다크모드 적용 시도
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                settings.isAlgorithmicDarkeningAllowed = true
+            }
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, pageUrl: String?) {
+                    super.onPageFinished(view, pageUrl)
+                    // 페이지 로딩 후 CSS invert 방식으로 다크모드 강제 적용
+                    view?.evaluateJavascript(DARK_MODE_JS, null)
+                }
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    request: WebResourceRequest?
+                ): Boolean {
+                    // 팝업 내에서 링크 클릭 시 팝업 안에서 이동
+                    request?.url?.toString()?.let { view?.loadUrl(it) }
+                    return true
+                }
+            }
+            loadUrl(url)
+        }
+        root.addView(webView, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+        ))
+
+        webOverlayView = root
+        try {
+            windowManager.addView(root, overlayParams)
+        } catch (e: Exception) {
+            Log.e("Seoul2033Wiki", "WebOverlay 표시 오류", e)
+            Toast.makeText(ctx, "WebView 팝업 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ── 공통 정리 ────────────────────────────────────────────────────────────
     private fun releaseAll() {
         dismissPopup()
+        dismissWebOverlay()
         hideDropZone()
         overlayView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
         overlayView = null
@@ -489,8 +726,6 @@ class OverlayService : Service() {
     }
 
     private fun buildNotification(): Notification {
-        // 포그라운드 서비스 실행을 위한 최소 알림.
-        // 종료는 알림 대신 플로팅 버튼을 하단으로 드래그해서 수행.
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("서울2033 리더 실행 중")
             .setContentText("버튼을 아래로 드래그해서 종료")
@@ -503,6 +738,6 @@ class OverlayService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         releaseAll()
-        Seoul2033AccessibilityService.notifyOverlayStopped()  // 추가
+        Seoul2033AccessibilityService.notifyOverlayStopped()
     }
 }

@@ -481,7 +481,7 @@ object MainStoryEncounterResolver {
         "거실에들어서자아버지와어머니가소파에앉아당신을기다리고있습니다" to "저택 재방문 1회차",
 
         // 2.7.2.2 저택 재방문 2회차
-        "거실로들어서니아버지가서류를보고있고어머니는옆에서차를마시고있습니다" to "저택 재방문 2회차",
+        "당신은다시부모님의저택을방문합니다문지기가문을열어주며고개를숙입니다오셨군요안으로들어가세요거실로들어서니아버지가서류를보고있고어머니는옆에서차를마시고있습니다" to "저택 재방문 2회차",
 
         // 2.7.2.3 저택 재방문 3회차
         "거실로들어서니아버지가소파에앉아두세명의방문객과이야기하고있습니다" to "저택 재방문 3회차",
@@ -812,6 +812,10 @@ object MainStoryEncounterResolver {
         map
     }
 
+
+    // ── 힌트 맵 ──────────────────────────────────────────────────────────────
+    fun hint(anchor: String): String? = EncounterHints.getMainStory(anchor)
+
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
 
@@ -960,7 +964,7 @@ object MainStoryEncounterResolver {
             var rowMin = curr[0]
             for (j in 1..b.length) {
                 curr[j] = if (a[i - 1] == b[j - 1]) prev[j - 1]
-                           else 1 + minOf(prev[j], curr[j - 1], prev[j - 1])
+                else 1 + minOf(prev[j], curr[j - 1], prev[j - 1])
                 if (curr[j] < rowMin) rowMin = curr[j]
             }
             if (rowMin > rowExit) return rowExit + 1

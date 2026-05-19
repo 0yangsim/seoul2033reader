@@ -363,6 +363,7 @@ object BasicEncounterResolver {
         "손을뻗어빗방울을만져보니피부가심하게따끔거리는게그냥맞으면위험할것같습니다" to "비 오는 밤 2",
 
         // 6.16.8 우울한 밤
+        "밤하늘을보던당신의기분이몹시우울해집니다" to "우울한 밤",
         "이따금씩누구에게나그럴때가있습니다원인모를우울함이찾아오는것말이지요" to "우울한 밤",
         "오늘도힘들게걷기만하다가하루를마친당신에게유독밤하늘이차갑고쓸쓸하게만보입니다" to "우울한 밤",
 
@@ -837,9 +838,9 @@ object BasicEncounterResolver {
         "등나무아래벤치에누워있던추레한차림의중년남자가당신을불러세웁니다" to "아파트 단지 앞 미친 중년 남성",
         "으이으이으이금밟아서쓰것냐요즘것들은안된다니까" to "아파트 단지 앞 미친 중년 남성",
 
-        // 6.116 자동차 엔진룸
-        "인적이없는도로위를걸어가고있는데멀리건물들사이로검은연기가모락모락올라오는것이보입니다" to "자동차 엔진룸",
-        "검은연기는바퀴가하나빠진낡은자동차의엔진룸에서나오는것이었습니다" to "자동차 엔진룸",
+        // 6.116 검은 연기
+        "인적이없는도로위를걸어가고있는데멀리건물들사이로검은연기가모락모락올라오는것이보입니다" to "검은 연기",
+        "검은연기는바퀴가하나빠진낡은자동차의엔진룸에서나오는것이었습니다" to "검은 연기",
 
         // 6.117 문이 활짝 열린 편의점
         "문이활짝열린편의점을발견했습니다슬쩍들여다보니안에서난투라도벌어졌던것인지매대가전부쓰러져있습니다" to "문이 활짝 열린 편의점",
@@ -1161,8 +1162,8 @@ object BasicEncounterResolver {
         "의은신처에방문했습니다들어간다" to "은신처",
 
         // 6.195 SQL보살
-        "그산속에은둔한예언자이야기알지유명하잖아" to "SQL보살",
-        "우면산에올라가면할아버지한분이움막을짓고살고계시는데" to "SQL보살",
+        "그소문들었어마을주민들이소곤거립니다우면산속에은둔한예언자SQL보살님이야기알지유명하잖아" to "SQL보살",
+        "마을주민들은당신을신경쓰지않고심각한표정으로대화를이어갑니다" to "SQL보살",
 
         // 6.196 고철 바리케이드
         "길을걷던당신은도로가불탄자동차와고철더미로막혀있는것을발견합니다" to "고철 바리케이드",
@@ -2084,11 +2085,12 @@ object BasicEncounterResolver {
 
         // 12.2.1.2 로망 판매
         "지저분한골목을지나가고있는데누군가가어깨를붙잡습니다나나는로망의냄새가돈은얼마든지" to "로망 판매",
-        "수척한남자or여자가로망을팔라고한다냄새가나냄새가로망말이야" to "로망 판매",
+        "냄새가나냄새가수척해보이는남자하나가코를킁킁대며당신을따라오고있습니다" to "로망 판매",
+        "이봐요수척해보이는여자하나가당신에게다가와팔뚝을더듬습니다로망그게느껴져요" to "로망 판매",
 
         // 12.2.2 치즈케이크맛 담배
         "킁킁이달콤한냄새골목을지나가는데앳되어보이는여자하나가코를킁킁대며당신을졸졸따라옵니다" to "치즈케이크맛 담배",
-        "치즈케이크맛담배갖고있지나에게팔아" to "치즈케이크맛 담배",
+        "예전에담배와통조림을거래했던여자를다시만났습니다치즈케이크맛담배갖고왔어" to "치즈케이크맛 담배",
 
         // 12.2.3 스팸
         "주택공사현장을지나가고있는데공사책임자로보이는사람이당신을불러세웁니다" to "스팸",
@@ -2566,6 +2568,10 @@ object BasicEncounterResolver {
         map
     }
 
+
+    // ── 힌트 맵 ──────────────────────────────────────────────────────────────
+    fun hint(anchor: String): String? = EncounterHints.getBasic(anchor)
+
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
 
@@ -2579,7 +2585,7 @@ object BasicEncounterResolver {
             val bucket = prefixIndex[prefix] ?: continue
             for ((key, anchor) in bucket) {
                 if (!seen.add(key)) continue
-                if (key.length >= 6 && cleanInput.contains(key) && key.length > exactBestKey.length) {
+                if (key.length >= 6 && cleanInput.contains(key) && key.length >= exactBestKey.length) {
                     exactBestKey = key
                     exactBestAnchor = anchor
                 }
@@ -2613,7 +2619,8 @@ object BasicEncounterResolver {
             }
         }
 
-        val best = candidates.maxByOrNull { it.score }
+        val bestScore = candidates.maxOfOrNull { it.score } ?: 0.0
+        val best = candidates.lastOrNull { it.score == bestScore }
 
         if (best != null) {
             Log.d(TAG, "기본 인카운터 유사도 매칭: '${best.anchor}' (점수=${"%.2f".format(best.score)}, 키=${best.key.take(15)}...)")

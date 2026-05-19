@@ -170,12 +170,16 @@ object HardModeEncounterResolver {
     private fun normalize(s: String) =
         s.replace(Regex("""[\s·!?.,:'"ー–—\-]"""), "").lowercase()
 
+
+    // ── 힌트 맵 ──────────────────────────────────────────────────────────────
+    fun hint(anchor: String): String? = EncounterHints.getHardMode(anchor)
+
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
 
         val matched = ENCOUNTER_MAP
             .filter { (key, _) -> key.length >= 8 && cleanInput.contains(key) }
-            .maxByOrNull { (key, _) -> key.length }
+            .let { hits -> val max = hits.maxOfOrNull { (k, _) -> k.length } ?: 0; hits.lastOrNull { (k, _) -> k.length == max } }
 
         if (matched == null) {
             Log.d(TAG, "하드 모드 인카운터 매칭 실패")
