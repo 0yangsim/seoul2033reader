@@ -18,7 +18,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
@@ -43,7 +42,6 @@ class OverlayService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "overlay_channel"
-
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -378,7 +376,6 @@ class OverlayService : Service() {
                 elevation = 24 * density
             }
 
-            // ── 타입 라벨 + 힌트 버튼 가로 행 ────────────────────────────
             val headerRow = LinearLayout(ctx).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
@@ -390,7 +387,6 @@ class OverlayService : Service() {
                 typeface = AppFont.regular(ctx)
             }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
 
-            // 힌트 버튼: 힌트 있을 때만 표시
             if (hint != null) {
                 headerRow.addView(TextView(ctx).apply {
                     text = if (showHint) "힌트 끄기" else "힌트 보기"
@@ -417,7 +413,6 @@ class OverlayService : Service() {
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply { bottomMargin = (4 * density).toInt() })
 
-            // ── 제목 ───────────────────────────────────────────────────────
             root.addView(TextView(ctx).apply {
                 text = entry.title
                 textSize = 18f
@@ -429,9 +424,8 @@ class OverlayService : Service() {
             ).apply { bottomMargin = if (showHint) (12 * density).toInt() else (4 * density).toInt() })
 
             if (showHint) {
-                // ── 힌트 텍스트 ───────────────────────────────────────────
                 root.addView(TextView(ctx).apply {
-                    text = hint ?: "기능 추가 예정"
+                    text = hint ?: "현재 힌트 기능은 거의 업데이트 되지 않았습니다."
                     textSize = 13f
                     setTextColor(0xFFD8D8D8.toInt())
                     typeface = AppFont.regular(ctx)
@@ -440,7 +434,6 @@ class OverlayService : Service() {
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply { bottomMargin = (16 * density).toInt() })
             } else {
-                // ── URL 미리보기 ──────────────────────────────────────────
                 root.addView(TextView(ctx).apply {
                     text = entry.url
                     textSize = 11f
@@ -454,7 +447,6 @@ class OverlayService : Service() {
                 ).apply { bottomMargin = (16 * density).toInt() })
             }
 
-            // ── 버튼 행: 브라우저에서 열기 / 팝업으로 열기 ────────────────
             val btnRow = LinearLayout(ctx).apply { orientation = LinearLayout.HORIZONTAL }
 
             btnRow.addView(Button(ctx).apply {
@@ -528,11 +520,160 @@ class OverlayService : Service() {
     // ── 오버레이 WebView ─────────────────────────────────────────────────────
     private var webOverlayView: View? = null
     private var webOverlayParams: WindowManager.LayoutParams? = null
+    private var webOverlayIsPeeked = false
+    private var webOverlayFullX = 0
+    private var webOverlayFullY = 0
+
+    // peek 드롭존 (오른쪽 가장자리 세로 중앙)
+    private var peekDropZoneView: View? = null
+
+    // peek 상태에서 터치 차단 + 탭 감지용 투명 오버레이
+    private var peekTapOverlayView: View? = null
+
+    private fun showPeekDropZone() {
+        if (peekDropZoneView != null) return
+        val density = resources.displayMetrics.density
+        val screenHeight = resources.displayMetrics.heightPixels
+        val zoneW = (6 * density).toInt()
+        val zoneH = (500 * density).toInt()
+
+        val view = View(this).apply {
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                setColor(0xCCE6C15A.toInt())
+                cornerRadius = 4 * density
+            }
+        }
+        val params = WindowManager.LayoutParams(
+            zoneW, zoneH,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.CENTER_VERTICAL or Gravity.END
+            x = 0
+        }
+        peekDropZoneView = view
+        try { windowManager.addView(view, params) } catch (_: Exception) {}
+    }
+
+    private fun hidePeekDropZone() {
+        peekDropZoneView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
+        peekDropZoneView = null
+    }
+
+    private fun isInPeekDropZone(rawX: Float, rawY: Float): Boolean {
+        val v = peekDropZoneView ?: return false
+        // 뷰가 아직 layout 안 됐으면 width/height == 0 → 화면 좌표 기반 폴백
+        val loc = IntArray(2)
+        v.getLocationOnScreen(loc)
+        val density = resources.displayMetrics.density
+        // 시각적 바(6dp)보다 넓은 48dp 여유를 양옆에 추가
+        val hitPad = (48 * density).toInt()
+        val vW = if (v.width > 0) v.width else (6 * density).toInt()
+        val vH = if (v.height > 0) v.height else (500 * density).toInt()
+        val left   = (loc[0] - hitPad).toFloat()
+        val right  = (loc[0] + vW + hitPad).toFloat()
+        val top    = loc[1].toFloat()
+        val bottom = (loc[1] + vH).toFloat()
+        return rawX in left..right && rawY in top..bottom
+    }
 
     private fun dismissWebOverlay() {
         webOverlayView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
         webOverlayView = null
         webOverlayParams = null
+        webOverlayIsPeeked = false
+        hidePeekDropZone()
+        hidePeekTapOverlay()
+    }
+
+    // peek 중 터치 차단 + 탭 복원용 투명 오버레이
+    @android.annotation.SuppressLint("ClickableViewAccessibility")
+    private fun showPeekTapOverlay(popupW: Int, popupH: Int) {
+        hidePeekTapOverlay()
+        val view = View(this).apply {
+            setBackgroundColor(0x00000000)  // 완전 투명
+        }
+        val params = WindowManager.LayoutParams(
+            popupW, popupH,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        ).apply { gravity = Gravity.CENTER }
+        // peek 상태이므로 위치를 webOverlayParams와 동기화
+        webOverlayParams?.let { p -> params.x = p.x; params.y = p.y }
+        view.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                hidePeekTapOverlay()
+                // 절반만 튀어나오도록: 오른쪽 가장자리 기준 popupW/2 위치
+                val p = webOverlayParams ?: return@setOnTouchListener true
+                val sw = resources.displayMetrics.widthPixels
+                webOverlayIsPeeked = false
+                p.width = popupW
+                p.height = popupH
+                // 팝업 왼쪽 절반이 화면 밖, 오른쪽 절반이 화면 안에 걸치도록
+                // screenWidth/2 + x + popupW/2 = screenWidth + popupW/2 → x = sw/2
+                p.x = sw / 2
+                p.y = webOverlayFullY
+                try { windowManager.updateViewLayout(webOverlayView ?: return@setOnTouchListener true, p) } catch (_: Exception) {}
+            }
+            true
+        }
+        peekTapOverlayView = view
+        try { windowManager.addView(view, params) } catch (_: Exception) {}
+    }
+
+    private fun hidePeekTapOverlay() {
+        peekTapOverlayView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
+        peekTapOverlayView = null
+    }
+
+    // peek 진입: 너비 80dp, 높이는 popupH 유지 → 세로로 긴 갤럭시 팝업뷰 스타일
+    private fun peekWebOverlay(popupW: Int, popupH: Int) {
+        val root = webOverlayView ?: return
+        val params = webOverlayParams ?: return
+        val density = resources.displayMetrics.density
+        val screenWidth = resources.displayMetrics.widthPixels
+        val screenHeight = resources.displayMetrics.heightPixels
+
+        val peekW = (20 * density).toInt()
+
+        webOverlayFullX = params.x
+        webOverlayFullY = params.y
+        webOverlayIsPeeked = true
+
+        // 너비 20dp, 높이 화면의 30%로 축소
+        val peekH = (screenHeight * 0.3f).toInt()
+        params.width = peekW
+        params.height = peekH
+
+        // 오른쪽 가장자리에 붙이기 (gravity=CENTER 기준)
+        // screenWidth/2 + x + peekW/2 = screenWidth  →  x = screenWidth/2 - peekW/2
+        params.x = screenWidth / 2 - peekW / 2
+
+        // 세로는 현재 위치 유지, 화면 밖 클램프
+        val maxY = (screenHeight - peekH) / 2
+        params.y = params.y.coerceIn(-maxY, maxY)
+
+        try { windowManager.updateViewLayout(root, params) } catch (_: Exception) {}
+
+        // peek 진입 후: 터치 차단 + 탭 복원 오버레이 띄우기
+        showPeekTapOverlay(popupW, popupH)
+    }
+
+    // peek → 전체 복원
+    private fun expandWebOverlay(fullW: Int, fullH: Int) {
+        val root = webOverlayView ?: return
+        val params = webOverlayParams ?: return
+        webOverlayIsPeeked = false
+        hidePeekTapOverlay()
+        params.width = fullW
+        params.height = fullH
+        params.x = webOverlayFullX
+        params.y = webOverlayFullY
+        try { windowManager.updateViewLayout(root, params) } catch (_: Exception) {}
     }
 
     @android.annotation.SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
@@ -543,6 +684,19 @@ class OverlayService : Service() {
         val density = metrics.density
         val screenWidth = metrics.widthPixels
         val screenHeight = metrics.heightPixels
+
+        val popupW = (screenWidth * 0.92).toInt()
+        val popupH = (screenHeight * 0.5).toInt()
+
+        val overlayParams = WindowManager.LayoutParams(
+            popupW, popupH,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT
+        ).apply { gravity = Gravity.CENTER }
+
+        webOverlayParams = overlayParams
 
         val root = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
@@ -555,49 +709,29 @@ class OverlayService : Service() {
             elevation = 32 * density
         }
 
-        val popupW = (screenWidth * 0.92).toInt()
-        val popupH = (screenHeight * 0.5).toInt()
-
-        val overlayParams = WindowManager.LayoutParams(
-            popupW, popupH,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-            PixelFormat.TRANSLUCENT
-        ).apply { gravity = Gravity.CENTER }
-
-        webOverlayParams = overlayParams
-
-        // ── 상단 바 (드래그 핸들 겸용) ───────────────────────────────────
-        var dragInitX = 0; var dragInitY = 0
-        var dragTouchX = 0f; var dragTouchY = 0f
-
+        // ── 상단 바 ───────────────────────────────────────────────────────
         val topBar = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL
             val vPad = (12 * density).toInt()
             val hPad = (14 * density).toInt()
             setPadding(hPad, vPad, hPad, vPad)
             gravity = Gravity.CENTER_VERTICAL
-            // 드래그 핸들임을 시각적으로 표시
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 setColor(0xFF1A1A1A.toInt())
-                // 상단 모서리만 둥글게
                 cornerRadii = floatArrayOf(
-                    16 * density, 16 * density,   // top-left
-                    16 * density, 16 * density,   // top-right
-                    0f, 0f,                        // bottom-right
-                    0f, 0f                         // bottom-left
+                    16 * density, 16 * density,
+                    16 * density, 16 * density,
+                    0f, 0f, 0f, 0f
                 )
             }
         }
 
-        // 드래그 핸들 아이콘 (≡ 형태)
         topBar.addView(TextView(ctx).apply {
             text = "⠿"
             textSize = 14f
             setTextColor(0xFF555555.toInt())
-            val rPad = (8 * density).toInt()
-            setPadding(0, 0, rPad, 0)
+            setPadding(0, 0, (8 * density).toInt(), 0)
         }, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
@@ -624,37 +758,15 @@ class OverlayService : Service() {
             LinearLayout.LayoutParams.WRAP_CONTENT
         ))
 
-        // 상단 바 터치로 팝업 전체 드래그
-        topBar.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    dragInitX = overlayParams.x
-                    dragInitY = overlayParams.y
-                    dragTouchX = event.rawX
-                    dragTouchY = event.rawY
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    overlayParams.x = dragInitX + (event.rawX - dragTouchX).toInt()
-                    overlayParams.y = dragInitY + (event.rawY - dragTouchY).toInt()
-                    try { windowManager.updateViewLayout(root, overlayParams) } catch (_: Exception) {}
-                    true
-                }
-                else -> false
-            }
-        }
-
         root.addView(topBar, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         ))
 
-        // ── 구분선 ────────────────────────────────────────────────────────
         root.addView(View(ctx).apply {
             setBackgroundColor(0xFF2A2A2A.toInt())
         }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (1 * density).toInt()))
 
-        // ── WebView ───────────────────────────────────────────────────────
         val webView = WebView(ctx).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
@@ -665,14 +777,10 @@ class OverlayService : Service() {
             settings.userAgentString =
                 "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36"
             webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, pageUrl: String?) {
-                    super.onPageFinished(view, pageUrl)
-                }
                 override fun shouldOverrideUrlLoading(
                     view: WebView?,
                     request: WebResourceRequest?
                 ): Boolean {
-                    // 팝업 내에서 링크 클릭 시 팝업 안에서 이동
                     request?.url?.toString()?.let { view?.loadUrl(it) }
                     return true
                 }
@@ -682,6 +790,118 @@ class OverlayService : Service() {
         root.addView(webView, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
         ))
+
+        // ── 드래그-to-close 상태 ─────────────────────────────────────────
+        var webCloseDropZone: View? = null
+        var webDragInitX2 = 0; var webDragInitY2 = 0
+        var webDragTouchX2 = 0f; var webDragTouchY2 = 0f
+        var isWebDragging = false
+
+        fun showWebCloseDropZone() {
+            if (webCloseDropZone != null) return
+            val sizePx = (56 * density).toInt()
+            val tv = TextView(ctx).apply {
+                text = "✕"
+                textSize = 22f
+                setTextColor(0xFFFFFFFF.toInt())
+                gravity = Gravity.CENTER
+                background = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(0xCC333333.toInt())
+                    setStroke((2 * density).toInt(), 0xFFAAAAAA.toInt())
+                }
+            }
+            val dzParams = WindowManager.LayoutParams(
+                sizePx, sizePx,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                PixelFormat.TRANSLUCENT
+            ).apply {
+                gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+                y = (72 * density).toInt()
+            }
+            webCloseDropZone = tv
+            try { windowManager.addView(tv, dzParams) } catch (_: Exception) {}
+        }
+
+        fun hideWebCloseDropZone() {
+            webCloseDropZone?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
+            webCloseDropZone = null
+        }
+
+        fun isInWebCloseZone(rawX: Float, rawY: Float): Boolean {
+            val v = webCloseDropZone ?: return false
+            val loc = IntArray(2); v.getLocationOnScreen(loc)
+            val cx = loc[0] + v.width / 2f; val cy = loc[1] + v.height / 2f
+            val r = v.width / 2f * 2.0f
+            val dx = rawX - cx; val dy = rawY - cy
+            return dx * dx + dy * dy <= r * r
+        }
+
+        // topBar에 드래그-to-close 추가 (기존 topBar 터치리스너를 wrapping)
+        topBar.setOnTouchListener { v2, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    if (webOverlayIsPeeked) {
+                        expandWebOverlay(popupW, popupH)
+                        return@setOnTouchListener true
+                    }
+                    webDragInitX2 = overlayParams.x; webDragInitY2 = overlayParams.y
+                    webDragTouchX2 = event.rawX; webDragTouchY2 = event.rawY
+                    isWebDragging = false
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (webOverlayIsPeeked) return@setOnTouchListener true
+                    val dx = event.rawX - webDragTouchX2
+                    val dy = event.rawY - webDragTouchY2
+                    if (!isWebDragging && (kotlin.math.abs(dx) > 8 || kotlin.math.abs(dy) > 8)) {
+                        isWebDragging = true
+                        showWebCloseDropZone()
+                        showPeekDropZone()
+                    }
+                    if (isWebDragging) {
+                        val density2 = resources.displayMetrics.density
+                        val topBarH = (44 * density2).toInt()
+                        val halfW = popupW / 2; val halfH = popupH / 2
+                        val clampedX = (webDragInitX2 + dx.toInt()).coerceIn(-(screenWidth / 2 + halfW - topBarH), screenWidth / 2 + halfW - topBarH)
+                        val clampedY = (webDragInitY2 + dy.toInt()).coerceIn(-(screenHeight / 2 + halfH - topBarH), screenHeight / 2 + halfH - topBarH)
+                        overlayParams.x = clampedX; overlayParams.y = clampedY
+                        try { windowManager.updateViewLayout(root, overlayParams) } catch (_: Exception) {}
+
+                        val inClose = isInWebCloseZone(event.rawX, event.rawY)
+                        val inPeek  = isInPeekDropZone(event.rawX, event.rawY)
+                        (webCloseDropZone as? TextView)?.apply {
+                            setTextColor(if (inClose) 0xFFFF4444.toInt() else 0xFFFFFFFF.toInt())
+                            (background as? GradientDrawable)?.apply {
+                                setColor(if (inClose) 0xCC3D0000.toInt() else 0xCC333333.toInt())
+                                setStroke((2 * density).toInt(), if (inClose) 0xFFFF4444.toInt() else 0xFFAAAAAA.toInt())
+                            }
+                        }
+                        peekDropZoneView?.background = (peekDropZoneView?.background as? GradientDrawable)?.apply {
+                            setColor(if (inPeek) 0xFFE6C15A.toInt() else 0xCCE6C15A.toInt())
+                        }
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (webOverlayIsPeeked) return@setOnTouchListener true
+                    if (isWebDragging) {
+                        isWebDragging = false
+                        val shouldClose = isInWebCloseZone(event.rawX, event.rawY)
+                        val shouldPeek  = isInPeekDropZone(event.rawX, event.rawY)
+                        hideWebCloseDropZone()
+                        hidePeekDropZone()
+                        when {
+                            shouldClose -> dismissWebOverlay()
+                            shouldPeek  -> peekWebOverlay(popupW, popupH)
+                        }
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
 
         webOverlayView = root
         try {
