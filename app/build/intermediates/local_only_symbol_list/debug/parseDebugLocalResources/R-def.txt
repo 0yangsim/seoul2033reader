@@ -21,12 +21,13 @@ id btnManageItems
 id btnOpen
 id btnRequestAccessibility
 id btnRequestOverlay
+id btnResetPosition
+id btnSavePosition
 id btnStart
 id btnStop
 id overlayBtnText
 id statusText
 id switchAutoStart
-id switchHintDefault
 id tvTitle
 id tvType
 id tvUrl

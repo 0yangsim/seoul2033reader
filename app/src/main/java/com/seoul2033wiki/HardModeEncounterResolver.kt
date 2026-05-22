@@ -171,9 +171,6 @@ object HardModeEncounterResolver {
         s.replace(Regex("""[\s·!?.,:'"ー–—\-]"""), "").lowercase()
 
 
-    // ── 힌트 맵 ──────────────────────────────────────────────────────────────
-    fun hint(anchor: String): String? = EncounterHints.getHardMode(anchor)
-
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
 

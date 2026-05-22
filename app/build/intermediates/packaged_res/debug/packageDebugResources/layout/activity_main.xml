@@ -112,49 +112,6 @@
 
         </LinearLayout>
 
-        <!-- 힌트 바로 표시 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/status_card"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="14dp"
-            android:layout_marginBottom="32dp">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="힌트 바로 표시"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/kopub_batang"
-                    android:textColor="#BBBBBB"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:fontFamily="@font/kopub_batang"
-                    android:text="버튼 탭 후에 힌트를 바로 표시합니다. (현재 미완성)"
-                    android:textColor="#555555"
-                    android:textSize="11sp" />
-
-            </LinearLayout>
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/switchHintDefault"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="false"/>
-
-        </LinearLayout>
 
         <!-- 권한 버튼 -->
         <LinearLayout
@@ -211,7 +168,39 @@
             android:textSize="13sp"
             android:background="@drawable/btn_stop"
             android:stateListAnimator="@null"
-            android:layout_marginBottom="36dp"/>
+            android:layout_marginBottom="10dp"/>
+
+        <!-- 현재 버튼 위치 기억 + 초기화 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="36dp">
+
+            <Button
+                android:id="@+id/btnSavePosition"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="현재 버튼 위치 기억"
+                android:textColor="#999999"
+                android:textSize="13sp"
+                android:background="@drawable/btn_stop"
+                android:stateListAnimator="@null"/>
+
+            <Button
+                android:id="@+id/btnResetPosition"
+                android:layout_width="wrap_content"
+                android:layout_height="46dp"
+                android:paddingHorizontal="16dp"
+                android:text="위치 초기화"
+                android:textColor="#777777"
+                android:textSize="11sp"
+                android:background="@drawable/btn_stop"
+                android:stateListAnimator="@null"/>
+
+        </LinearLayout>
 
         <!-- 구분선 -->
         <View

@@ -55,6 +55,14 @@ class OverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == MainActivity.ACTION_SAVE_POSITION) {
+            saveOverlayPosition()
+            return START_NOT_STICKY
+        }
+        if (intent?.action == MainActivity.ACTION_RESET_POSITION) {
+            resetOverlayPosition()
+            return START_NOT_STICKY
+        }
         if (overlayView != null) {
             handler.post {
                 Toast.makeText(this, getString(R.string.overlay_already_running), Toast.LENGTH_LONG).show()
@@ -72,6 +80,41 @@ class OverlayService : Service() {
         }
         setupOverlay()
         return START_NOT_STICKY
+    }
+
+    // ── 버튼 위치 저장 / 초기화 ─────────────────────────────────────────────
+    private fun saveOverlayPosition() {
+        val view = overlayView ?: run {
+            handler.post { Toast.makeText(this, "오버레이가 실행 중이지 않습니다.", Toast.LENGTH_SHORT).show() }
+            return
+        }
+        val params = view.layoutParams as? WindowManager.LayoutParams ?: return
+        getSharedPreferences("settings", MODE_PRIVATE).edit()
+            .putInt("overlay_x", params.x)
+            .putInt("overlay_y", params.y)
+            .putInt("overlay_gravity", params.gravity)
+            .apply()
+        handler.post { Toast.makeText(this, "위치가 저장됐어요!", Toast.LENGTH_SHORT).show() }
+    }
+
+    private fun resetOverlayPosition() {
+        val defaultGravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+        getSharedPreferences("settings", MODE_PRIVATE).edit()
+            .putInt("overlay_x", 0)
+            .putInt("overlay_y", 80)
+            .putInt("overlay_gravity", defaultGravity)
+            .apply()
+        val view = overlayView
+        if (view != null) {
+            val params = view.layoutParams as? WindowManager.LayoutParams
+            if (params != null) {
+                params.gravity = defaultGravity
+                params.x = 0
+                params.y = 80
+                try { windowManager.updateViewLayout(view, params) } catch (_: Exception) {}
+            }
+        }
+        handler.post { Toast.makeText(this, "버튼 위치가 초기화됐어요!", Toast.LENGTH_SHORT).show() }
     }
 
     // ── 드래그 종료 영역 오버레이 ────────────────────────────────────────────
@@ -136,7 +179,28 @@ class OverlayService : Service() {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
-        ).apply { gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL; y = 80 }
+        )
+        // 마지막 저장 위치 복원 (없으면 상단 가로 중앙)
+        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
+        val savedGravity = prefs.getInt("overlay_gravity", Gravity.TOP or Gravity.CENTER_HORIZONTAL)
+        params.gravity = savedGravity
+        params.x = prefs.getInt("overlay_x", 0)
+        params.y = prefs.getInt("overlay_y", 80)
+        // CENTER_HORIZONTAL 기준일 때 드래그 시작 시 LEFT로 정규화
+        if (savedGravity != (Gravity.TOP or Gravity.LEFT)) {
+            newView.post {
+                val loc = IntArray(2)
+                newView.getLocationOnScreen(loc)
+                val statusBarHeight = run {
+                    val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
+                    if (resId > 0) resources.getDimensionPixelSize(resId) else 0
+                }
+                params.gravity = Gravity.TOP or Gravity.LEFT
+                params.x = loc[0]
+                params.y = loc[1] - statusBarHeight
+                try { windowManager.updateViewLayout(newView, params) } catch (_: Exception) {}
+            }
+        }
 
         val btnText = newView.findViewById<TextView>(R.id.overlayBtnText)
         btnText.setTextColor(0xFFF5F0C8.toInt())
@@ -156,14 +220,16 @@ class OverlayService : Service() {
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    params.x = initialX + (event.rawX - initialTouchX).toInt()
-                    params.y = initialY + (event.rawY - initialTouchY).toInt()
-                    windowManager.updateViewLayout(newView, params)
                     val moved = kotlin.math.abs(event.rawX - initialTouchX) > 10 ||
                             kotlin.math.abs(event.rawY - initialTouchY) > 10
                     if (moved && !isDragging) {
                         isDragging = true
                         showDropZone()
+                    }
+                    if (isDragging) {
+                        params.x = initialX + (event.rawX - initialTouchX).toInt()
+                        params.y = initialY + (event.rawY - initialTouchY).toInt()
+                        windowManager.updateViewLayout(newView, params)
                     }
                     if (isDragging) {
                         val inZone = isInDropZone(event.rawX, event.rawY)
@@ -332,30 +398,12 @@ class OverlayService : Service() {
     // ── 결과 팝업 ────────────────────────────────────────────────────────────
     private var popupView: View? = null
 
-    private fun getHint(entry: ResolvedEntry): String? = when (entry.type) {
-        EntryType.EXPANSION_ENCOUNTER -> {
-            val dash = entry.title.indexOf(" - ")
-            if (dash >= 0) ExpansionEncounterResolver.hint(
-                entry.title.substring(0, dash),
-                entry.title.substring(dash + 3)
-            ) else null
-        }
-        EntryType.BASIC_ENCOUNTER     -> BasicEncounterResolver.hint(entry.title)
-        EntryType.ACTIVE_ENCOUNTER    -> ActiveEncounterResolver.hint(entry.title)
-        EntryType.HARD_MODE_ENCOUNTER -> HardModeEncounterResolver.hint(entry.title)
-        EntryType.MAIN_STORY          -> MainStoryEncounterResolver.hint(entry.title)
-        else -> null
-    }
-
     private fun showResultPopup(entry: ResolvedEntry) {
-        val hint = getHint(entry)
-        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
-        val showHintImmediately = prefs.getBoolean(MainActivity.KEY_HINT_DEFAULT, false)
-        showPopupInternal(entry = entry, hint = hint, showHint = showHintImmediately)
+        showPopupInternal(entry)
     }
 
     @android.annotation.SuppressLint("ClickableViewAccessibility")
-    private fun showPopupInternal(entry: ResolvedEntry, hint: String?, showHint: Boolean) {
+    private fun showPopupInternal(entry: ResolvedEntry) {
         handler.post {
             dismissPopup()
             val ctx = this
@@ -387,27 +435,6 @@ class OverlayService : Service() {
                 typeface = AppFont.regular(ctx)
             }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
 
-            if (hint != null) {
-                headerRow.addView(TextView(ctx).apply {
-                    text = if (showHint) "힌트 끄기" else "힌트 보기"
-                    textSize = 11f
-                    setTextColor(if (showHint) 0xFFAAAAAA.toInt() else 0xFFE6C15A.toInt())
-                    val hPad = (10 * density).toInt()
-                    val vPad = (4 * density).toInt()
-                    setPadding(hPad, vPad, hPad, vPad)
-                    background = GradientDrawable().apply {
-                        shape = GradientDrawable.RECTANGLE
-                        setColor(0xFF2A2A2A.toInt())
-                        cornerRadius = 10 * density
-                        setStroke((1 * density).toInt(), 0xFF555555.toInt())
-                    }
-                    setOnClickListener { showPopupInternal(entry, hint, !showHint) }
-                }, LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ))
-            }
-
             root.addView(headerRow, LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -421,31 +448,19 @@ class OverlayService : Service() {
             }, LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = if (showHint) (12 * density).toInt() else (4 * density).toInt() })
+            ).apply { bottomMargin = (4 * density).toInt() })
 
-            if (showHint) {
-                root.addView(TextView(ctx).apply {
-                    text = hint ?: "현재 힌트 기능은 거의 업데이트 되지 않았습니다."
-                    textSize = 13f
-                    setTextColor(0xFFD8D8D8.toInt())
-                    typeface = AppFont.regular(ctx)
-                }, LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { bottomMargin = (16 * density).toInt() })
-            } else {
-                root.addView(TextView(ctx).apply {
-                    text = entry.url
-                    textSize = 11f
-                    setTextColor(0xFF888888.toInt())
-                    typeface = AppFont.regular(ctx)
-                    maxLines = 2
-                    ellipsize = TextUtils.TruncateAt.END
-                }, LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { bottomMargin = (16 * density).toInt() })
-            }
+            root.addView(TextView(ctx).apply {
+                text = entry.url
+                textSize = 11f
+                setTextColor(0xFF888888.toInt())
+                typeface = AppFont.regular(ctx)
+                maxLines = 2
+                ellipsize = TextUtils.TruncateAt.END
+            }, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = (16 * density).toInt() })
 
             val btnRow = LinearLayout(ctx).apply { orientation = LinearLayout.HORIZONTAL }
 
@@ -596,14 +611,15 @@ class OverlayService : Service() {
         val view = View(this).apply {
             setBackgroundColor(0x00000000)  // 완전 투명
         }
+        // 실제 peek 탭 크기와 동일하게 설정해야 터치 영역이 일치함
+        val p = webOverlayParams ?: return
         val params = WindowManager.LayoutParams(
-            popupW, popupH,
+            p.width, p.height,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         ).apply { gravity = Gravity.CENTER }
-        // peek 상태이므로 위치를 webOverlayParams와 동기화
-        webOverlayParams?.let { p -> params.x = p.x; params.y = p.y }
+        params.x = p.x; params.y = p.y
         view.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 hidePeekTapOverlay()

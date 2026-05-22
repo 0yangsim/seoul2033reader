@@ -225,8 +225,6 @@ object ActiveEncounterResolver {
 
     // ── 힌트 맵 ──────────────────────────────────────────────────────────────
     // 앵커명 → 짧은 공략 힌트. 없으면 null (URL 표시).
-    // EncounterHints.kt 에 일괄 관리하므로 여기서는 위임만 한다.
-    fun hint(anchor: String): String? = EncounterHints.getActive(anchor)
 
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)

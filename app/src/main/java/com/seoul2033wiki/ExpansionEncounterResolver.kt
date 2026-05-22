@@ -2275,7 +2275,7 @@ object ExpansionEncounterResolver {
             "아침에식량창고에들어갔다가쌀포대아랫부분이찢어진걸발견했어요" to "방공호의 쥐구멍",
 
             // 9.40 최 엽사와 방공호
-            "길을걷고있는데최엽사가당신을부릅니다" to "최 엽사와 방공호",
+            "당신은지금방공호에있습니다최엽사도요" to "최 엽사와 방공호",
 
             // 9.41 전 하사의 총기 압수
             "즐거운사냥을마치고방공호의작은독방에서곤히자고있었는데누군가가시끄럽게깨웁니다" to "전 하사의 총기 압수",
@@ -2295,6 +2295,8 @@ object ExpansionEncounterResolver {
 
             // 9.45 늑대 죽이기
             "당신은방공호에서멍하니생각에빠져있습니다" to "늑대 죽이기",
+            "영감님원래사냥이렇게오래걸리지않았잖아요갑자기두배는오래걸리고사냥해오는동물도좀줄어들었어요저도사냥나갈래요" to "늑대 죽이기",
+            "총을들어올리자가늠쇠끝에늑대가얹힙니다" to "늑대 죽이기",
 
             // 9.46 노상강도를 만난 방공호
             "잠깐나갔던방공호생존자몇명이돌아와노상강도를만난이야기를꺼냅니다" to "노상강도를 만난 방공호",
@@ -5430,10 +5432,6 @@ object ExpansionEncounterResolver {
         return directMatch.ifEmpty { listOf(knownExpansion) }
     }
 
-
-    // ── 힌트 맵 ──────────────────────────────────────────────────────────────
-    // 확장팩별로 분리 관리. EncounterHints.kt 참조.
-    fun hint(expansion: String, anchor: String): String? = EncounterHints.getExpansion(expansion, anchor)
 
     fun resolve(rawText: String, knownExpansion: String? = null, ctx: android.content.Context? = null): ResolvedEntry? {
         // 패스스루 확장팩: 섹션 탐지 없이 확장팩 최상단 URL 반환

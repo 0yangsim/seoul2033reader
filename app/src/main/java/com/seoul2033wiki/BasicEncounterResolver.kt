@@ -312,6 +312,7 @@ object BasicEncounterResolver {
         // 6.11.3 두번째 현상수배 포스터
         "당신은길을걷다가예전에칠러김의현상수배포스터가붙어있던벽을다시발견했습니다" to "두번째 현상수배 포스터",
         "벽은이전보다훨씬더많은포스터가다닥다닥붙어져있습니다" to "두번째 현상수배 포스터",
+        "당신은킹짱돈의현상수배포스터에서말한대로삼청동주민센터앞에도착했습니다" to "두번째 현상수배 포스터",
 
         // 6.12 여의도 국회의사당
         "웬비좁은오리배안에서정신을차린당신은당신이한강한가운데에떠있다는것을깨닫습니다" to "여의도 국회의사당",
@@ -2568,9 +2569,6 @@ object BasicEncounterResolver {
         map
     }
 
-
-    // ── 힌트 맵 ──────────────────────────────────────────────────────────────
-    fun hint(anchor: String): String? = EncounterHints.getBasic(anchor)
 
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
