@@ -1,0 +1,16 @@
+# 빌드 결과물
+build/
+app/build/
+.gradle/
+
+# 로컬 설정
+local.properties
+
+# Android Studio
+.idea/
+*.iml
+.DS_Store
+
+# 키스토어 (보안)
+*.jks
+*.keystore
