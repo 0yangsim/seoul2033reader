@@ -32,12 +32,6 @@
             android:exported="false"
             android:theme="@style/Theme.Seoul2033Wiki.Dialog" />
 
-        <!-- 이야기/레벨/시즌패스/확장팩 항목 관리 Activity -->
-        <activity
-            android:name=".CustomItemActivity"
-            android:exported="false"
-            android:label="항목 관리" />
-
         <!-- 오버레이 서비스 -->
         <service
             android:name=".OverlayService"

@@ -833,7 +833,7 @@ object ExpansionEncounterResolver {
             "아지트에서홍찰리와최함찬이로망거래를해도되는지에대해서싸우고있다" to "로망 거래",
 
             // 2.3.3 반항하는 부하
-            "다른부하가밥먹다말고착한일하는보스는필요없다며반항한다" to "반항하는 부하",
+            "아지트에서조직원들과밥을먹고있는데갑자기조직원하나가숟가락을세게내려놓더니" to "반항하는 부하",
 
             // 2.3.4 소문
             "홍찰리or최함찬이찾아와당신에대해안좋은생각을가지고있다는소문이돈다고알려준다" to "소문",
@@ -851,7 +851,8 @@ object ExpansionEncounterResolver {
             "최함찬이조직원에게총쏘기를가르치겠다고한다" to "기타",
 
             // 2.3.6 물자 받기
-            "뒷골목두목일때조직원들이찾아와주민들로부터물자를징발했다면서물자를가져온다" to "물자 받기",
+            "당신이이끄는조직에대한소문이이근방에자자합니다아마최근에이곳사람들에게본때를" to "물자 받기",
+            "이주변마을주민들로부터조직을위해징발한물자입니다" to "물자 받기",
 
             // 2.3.7 육각수를 팔고 있는 홍찰리
             "그래서이육각수한방울이면모든통증이싹낫고체력이회복된다이말입니다" to "육각수를 팔고 있는 홍찰리",
@@ -1348,6 +1349,7 @@ object ExpansionEncounterResolver {
             "애기야요즘가게에술재고가많이떨어졌는데혹시좀갖고있니" to "이모",
 
             // 3.26 철물점 아저씨
+            "당신은색이바랜상자를잔뜩쌓아놓은철물점앞을지나고있었습니다쥐처럼생긴" to "철물점 아저씨",
             "아저씨의가게를살짝들여다보니아주엉망입니다" to "철물점 아저씨",
             "쫓아내도소용이없어금방돌아올거야청소할곳은얼마든지있는데왜여기로돌아오나몰라" to "철물점 아저씨",
             "아저씨가파리채를휘둘러엄지발톱만한파리를때려잡으며투덜거립니다" to "철물점 아저씨",
@@ -1688,6 +1690,7 @@ object ExpansionEncounterResolver {
 
             // 2.2 알록달록한 집
             "기술자들이레고로집을짓는바람에집주인은발바닥이아파서살수없다고하소연한다" to "알록달록한 집",
+            "알록달록한플라스틱으로벽과지붕이만들어진집들이보입니다이상한일이로군요" to "알록달록한 집",
 
             // 2.3 드래곤
             "인적하나없는조용한도로를지나는데어디선가쿵쿵소리와함께땅이울리기시작합니다" to "드래곤",
@@ -2610,8 +2613,8 @@ object ExpansionEncounterResolver {
             "야간시야꿈뻑꿈뻑포획실패더듬으며돌아다닌다성공" to "연쥐&곤쥐",
 
             // 2.3 스튜던트 리틀
-            "도서관에서책을읽는쥐를발견한다계속대화를하다다음선택지가나온다" to "스튜던트 리틀",
-            "집으로초대되어서가족들과이야기를하게된다" to "스튜던트 리틀",
+            "당신은길을걷다가작은도서관을발견합니다이런곳에도서관이" to "스튜던트 리틀",
+            "친구분안녕하세요리틀이의부모입니다" to "스튜던트 리틀",
 
             // 2.4 쥐 목장
             "동물기르는곳특유의냄새를맡습니다여물거름동물의분비물등이함께어우러져나는그런냄새입니다" to "쥐 목장",
@@ -2965,10 +2968,10 @@ object ExpansionEncounterResolver {
         "엽총과 송곳니" to listOf(
 
             // ── 2.1 조직 가입 ──────────────────────────────────────────
-            // 🟢 엽우회 가입하기
+            // 엽우회 가입하기
             // 순찰대가 피투성이인 장면 → 도봉경찰서 도착 → 하비와 대화
-            "비열한송곳니자식들민간인지역에지뢰를뿌려곁에서있던엽사하나가미친듯이자신의가방을뒤지며욕지거리를뱉습니다" to "🟢엽우회 가입하기",
-            "어서오게우리엽사들이큰빚을졌다고들었는데" to "🟢엽우회 가입하기",
+            "비열한송곳니자식들민간인지역에지뢰를뿌려곁에서있던엽사하나가미친듯이자신의가방을뒤지며욕지거리를뱉습니다" to "엽우회 가입하기",
+            "어서오게우리엽사들이큰빚을졌다고들었는데" to "엽우회 가입하기",
 
             // 송곳니 가입하기
             // 노원교 검문 → 살인망치 → 노원경찰서 도착
@@ -2978,42 +2981,42 @@ object ExpansionEncounterResolver {
 
             // ── 2.2 엽우회 가입 시 인카운터 ───────────────────────────
 
-            // 🟢 2.2.1 송 엽사의 신입 교육
-            "도봉경찰서앞을지나는데엽사한명이당신을급하게불러세웁니다" to "🟢송 엽사의 신입 교육",
-            "최근엽우회훈련담당관으로배정된송엽사는신입엽사들교육을위해참고도서가필요하다고한다" to "🟢송 엽사의 신입 교육",
+            // 2.2.1 송 엽사의 신입 교육
+            "도봉경찰서앞을지나는데엽사한명이당신을급하게불러세웁니다" to "송 엽사의 신입 교육",
+            "최근엽우회훈련담당관으로배정된송엽사는신입엽사들교육을위해참고도서가필요하다고한다" to "송 엽사의 신입 교육",
 
-            // 🟢 2.2.1.1 책 구하기 1 (육군사관학교)
-            "한참을걸어가자마침내저멀리육군사관학교의정문이보입니다비록먼길을돌아오기는했지만덕분에송곳니놈들은마주치지않았습니다" to "🟢책 구하기 1 (육군사관학교)",
-            "송엽사가부탁한책을구할건물도몇개있어보이네요어디로가면좋을까요" to "🟢책 구하기 1 (육군사관학교)",
+            // 2.2.1.1 책 구하기 1 (육군사관학교)
+            "한참을걸어가자마침내저멀리육군사관학교의정문이보입니다비록먼길을돌아오기는했지만덕분에송곳니놈들은마주치지않았습니다" to "책 구하기 1 (육군사관학교)",
+            "송엽사가부탁한책을구할건물도몇개있어보이네요어디로가면좋을까요" to "책 구하기 1 (육군사관학교)",
 
-            // 🟢 2.2.1.2 책 구하기 2 (덕성여대)
-            "참을걸어간끝에마침내덕성여대정문이보입니다비록유리창도깨지고무너진곳도많지만멀쩡히남아있는금색대학간판이" to "🟢책 구하기 2 (덕성여대)",
+            // 2.2.1.2 책 구하기 2 (덕성여대)
+            "참을걸어간끝에마침내덕성여대정문이보입니다비록유리창도깨지고무너진곳도많지만멀쩡히남아있는금색대학간판이" to "책 구하기 2 (덕성여대)",
 
-            // 🟡 2.2.1.3 책 구하기 3 (동네 서점)
-            "송엽사가준지도를보며골목을찾아한참을들어가자마침내건물하나를통째로서점인곳이모습을드러냅니다" to "🟡책 구하기 3 (동네 서점)",
-            "동네서점치고는꽤크군요이정도크기라면송엽사가부탁한책도분명있을것같습니다" to "🟡책 구하기 3 (동네 서점)",
+            // 2.2.1.3 책 구하기 3 (동네 서점)
+            "송엽사가준지도를보며골목을찾아한참을들어가자마침내건물하나를통째로서점인곳이모습을드러냅니다" to "책 구하기 3 (동네 서점)",
+            "동네서점치고는꽤크군요이정도크기라면송엽사가부탁한책도분명있을것같습니다" to "책 구하기 3 (동네 서점)",
 
-            // 🟢 2.2.1.4 송 엽사에게 책 인계
-            "송엽사는경찰서정문에서담배에불을붙이다가당신이돌아오는것을보고멀리서부터반갑게손을흔듭니다" to "🟢송 엽사에게 책 인계",
+            // 2.2.1.4 송 엽사에게 책 인계
+            "송엽사는경찰서정문에서담배에불을붙이다가당신이돌아오는것을보고멀리서부터반갑게손을흔듭니다" to "송 엽사에게 책 인계",
 
-            // 🟢 2.2.2 대자보
-            "재정비를위해잠시도봉경찰서로돌아왔습니다낯익은엽사들과인사를나누고장비를점검하고있는데한젊은엽사가다가와말을" to "🟢대자보",
-            "민찬은엽우회를터무니없이비난하는대자보가붙고있다며방치해서는안된다고한다" to "🟢대자보",
+            // 2.2.2 대자보
+            "재정비를위해잠시도봉경찰서로돌아왔습니다낯익은엽사들과인사를나누고장비를점검하고있는데한젊은엽사가다가와말을" to "대자보",
+            "민찬은엽우회를터무니없이비난하는대자보가붙고있다며방치해서는안된다고한다" to "대자보",
 
-            // 🟢 2.2.3 피켓 든 할머니
-            "볼일이있어도봉경찰서에들렀습니다무심히정문을지나치던당신은어떤광경을보고멈춰섭니다" to "🟢피켓 든 할머니",
-            "우리아들정호살려내라피켓에는삐뚤빼뚤그한문장만적혀있습니다" to "🟢피켓 든 할머니",
+            // 2.2.3 피켓 든 할머니
+            "볼일이있어도봉경찰서에들렀습니다무심히정문을지나치던당신은어떤광경을보고멈춰섭니다" to "피켓 든 할머니",
+            "우리아들정호살려내라피켓에는삐뚤빼뚤그한문장만적혀있습니다" to "피켓 든 할머니",
 
-            // 🟢 2.2.4 대규모 시위
-            "당신은도봉구근처의한마을을지나가고있습니다" to "🟢대규모 시위",
-            "내일5시경찰서앞에서우리마을인원바람결에실려오는대화내용이심상치않습니다" to "🟢대규모 시위",
+            // 2.2.4 대규모 시위
+            "당신은도봉구근처의한마을을지나가고있습니다" to "대규모 시위",
+            "내일5시경찰서앞에서우리마을인원바람결에실려오는대화내용이심상치않습니다" to "대규모 시위",
 
             // 2.2.5 총기 회수
             "도봉경찰서에돌아와정비를하려고하는데고엽사가당신에게다가옵니다" to "총기 회수",
 
-            // 🟡 2.2.6 덫사냥꾼 킴
-            "고엽사님조사대복귀했습니다도봉산일대에덫을설치한장본인을파악했습니다" to "🟡 덫사냥꾼 킴",
-            "산속깊은곳의오두막에사는노파더군요" to "🟡 덫사냥꾼 킴",
+            // 2.2.6 덫사냥꾼 킴
+            "고엽사님조사대복귀했습니다도봉산일대에덫을설치한장본인을파악했습니다" to "덫사냥꾼 킴",
+            "산속깊은곳의오두막에사는노파더군요" to "덫사냥꾼 킴",
 
             // 2.2.7~2.2.10 엽우회의 전쟁 물자
             "엽우회들이전쟁물자를모으고있습니다도봉구의지하탐색을위한아이오딘정제를구하고있군요" to "엽우회의 전쟁 물자 1",
@@ -3022,27 +3025,27 @@ object ExpansionEncounterResolver {
             "엽우회에서전쟁물자를모으고있습니다엽사들을무장시킬총기류를모으고있다는군요" to "엽우회의 전쟁 물자 4",
 
             // 🟢 2.2.11 엽우회 정보원
-            "엽우회정보원이엽우회와송곳니가동원할수있는병력에대한분석보고서를제출했습니다" to "🟢엽우회 정보원",
+            "엽우회정보원이엽우회와송곳니가동원할수있는병력에대한분석보고서를제출했습니다" to "엽우회 정보원",
 
             // 2.2.12 병원
             "도봉구근처를지나가다가엽우회에서운영하는병원을발견했습니다" to "병원",
             "병원을인근주민에게개방했다더니사람들이매우정신없어보인다" to "병원",
 
             // 🟢 2.2.13.1 견 엽사
-            "당신은엄청난수의사냥개들이도봉경찰서앞을순찰하는것을봅니다모두첨단장비가연결된검은하네스와목걸이를착용하고" to "🟢견 엽사",
-            "난견엽사라고하네그래성이견씨고개도좋아하네" to "🟢견 엽사",
+            "당신은엄청난수의사냥개들이도봉경찰서앞을순찰하는것을봅니다모두첨단장비가연결된검은하네스와목걸이를착용하고" to "견 엽사",
+            "난견엽사라고하네그래성이견씨고개도좋아하네" to "견 엽사",
 
             // 🟡 2.2.13.2 오소이오소리 사냥하기 (엽우회)
-            "당신은중계근린공원에도착했습니다견엽사의말대로커다란공룡조형물이있으니찾기쉬웠습니다" to "🟡오소이오소리 사냥하기",
-            "목긴공룡상은칠이벗겨지긴했지만햇빛을받으며고고하게선모습이인상깊습니다" to "🟡오소이오소리 사냥하기",
+            "당신은중계근린공원에도착했습니다견엽사의말대로커다란공룡조형물이있으니찾기쉬웠습니다" to "오소이오소리 사냥하기",
+            "목긴공룡상은칠이벗겨지긴했지만햇빛을받으며고고하게선모습이인상깊습니다" to "오소이오소리 사냥하기",
 
             // 2.2.14 심마니
             "거기거기이리좀서봐도봉구를여행하다가인적이없는외진길에서한중년여자와마주쳤습니다" to "심마니",
             "등에는망태기를메고허리에는칼을찼습니다" to "심마니",
 
             // 🟡 2.2.15 족제비 사냥
-            "도봉구의한마을을지나가는데몇몇마을사람들이당신을불러세웁니다" to "🟡족제비 사냥",
-            "근처산에사는놈인데워낙잽싼놈이라" to "🟡족제비 사냥",
+            "도봉구의한마을을지나가는데몇몇마을사람들이당신을불러세웁니다" to "족제비 사냥",
+            "근처산에사는놈인데워낙잽싼놈이라" to "족제비 사냥",
 
             // 2.2.16 도봉산 산신령
             "정비를위해도봉경찰서로돌아왔습니다오자네마침잘왔군많이바쁘지않다면일하나만맡아주겠나고엽사가" to "도봉산 산신령",
@@ -5433,9 +5436,8 @@ object ExpansionEncounterResolver {
     }
 
 
-    fun resolve(rawText: String, knownExpansion: String? = null, ctx: android.content.Context? = null): ResolvedEntry? {
+    fun resolve(rawText: String, knownExpansion: String? = null): ResolvedEntry? {
         // 패스스루 확장팩: 섹션 탐지 없이 확장팩 최상단 URL 반환
-        // 1) 하드코딩 패스스루 목록
         if (knownExpansion != null && normalize(knownExpansion) in PASSTHROUGH_EXPANSIONS.map { normalize(it) }) {
             Log.d(TAG, "패스스루 확장팩 (하드코딩): '$knownExpansion'")
             return ResolvedEntry(
@@ -5443,18 +5445,6 @@ object ExpansionEncounterResolver {
                 type = EntryType.EXPANSION_ENCOUNTER,
                 url = buildExpansionUrl(knownExpansion, "")
             )
-        }
-        // 2) 사용자 등록 확장팩 → 섹션 키가 없으므로 패스스루 처리
-        if (knownExpansion != null && ctx != null) {
-            val customExpansions = CustomItemManager.getExpansions(ctx)
-            if (normalize(knownExpansion) in customExpansions.map { normalize(it) }) {
-                Log.d(TAG, "패스스루 확장팩 (사용자 등록): '$knownExpansion'")
-                return ResolvedEntry(
-                    title = knownExpansion, pageNum = "",
-                    type = EntryType.EXPANSION_ENCOUNTER,
-                    url = buildExpansionUrl(knownExpansion, "")
-                )
-            }
         }
 
         // ── 텍스트 분할 전략 ──────────────────────────────────────────────
@@ -5482,8 +5472,12 @@ object ExpansionEncounterResolver {
                     if (groupNames != null && normalize(expansion) !in groupNames) continue
                     val id = "$expansion::$key"
                     if (!seen.add(id)) continue
-                    if (key.length >= 8 && input.contains(key) && key.length >= bestKey.length) {
-                        bestKey = key; bestAnchor = anchor; bestExpansion = expansion
+                    if (key.length >= 8 && input.contains(key)) {
+                        val pos = input.indexOf(key)
+                        val bestPos = if (bestKey.isEmpty()) -1 else input.indexOf(bestKey)
+                        if (pos >= bestPos) {
+                            bestKey = key; bestAnchor = anchor; bestExpansion = expansion
+                        }
                     }
                 }
             }
@@ -5516,8 +5510,12 @@ object ExpansionEncounterResolver {
                     val id = "f::$expansion::$key"
                     if (!halfSeen.add(id)) continue
                     val firstHalf = key.substring(0, key.length / 2)
-                    if (firstHalf.length >= 6 && input.contains(firstHalf) && key.length >= hBestKey.length) {
-                        hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
+                    if (firstHalf.length >= 6 && input.contains(firstHalf)) {
+                        val pos = input.indexOf(firstHalf)
+                        val bestPos = if (hBestKey.isEmpty()) -1 else input.indexOf(hBestKey.substring(0, hBestKey.length / 2))
+                        if (pos >= bestPos) {
+                            hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
+                        }
                     }
                 }
                 val sBucket = suffixIndex[prefix] ?: emptyList()
@@ -5526,8 +5524,12 @@ object ExpansionEncounterResolver {
                     val id = "s::$expansion::$key"
                     if (!halfSeen.add(id)) continue
                     val secondHalf = key.substring(key.length / 2)
-                    if (secondHalf.length >= 6 && input.contains(secondHalf) && key.length >= hBestKey.length) {
-                        hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
+                    if (secondHalf.length >= 6 && input.contains(secondHalf)) {
+                        val pos = input.indexOf(secondHalf)
+                        val bestPos = if (hBestKey.isEmpty()) -1 else input.indexOf(hBestKey.substring(hBestKey.length / 2))
+                        if (pos >= bestPos) {
+                            hBestKey = key; hBestAnchor = anchor; hBestExpansion = expansion
+                        }
                     }
                 }
             }
@@ -5565,15 +5567,13 @@ object ExpansionEncounterResolver {
                     if (score >= FUZZY_THRESHOLD) candidates.add(FuzzyCandidate(key, anchor, expansion, score))
                 }
             }
-            val topScore = candidates.maxOfOrNull { it.score } ?: 0.0
-            return candidates.lastOrNull { it.score == topScore }
+            return candidates.lastOrNull()
         }
 
         val fuzzyCandidates = mutableListOf<FuzzyCandidate>()
         fuzzyMatch(backInput)?.let { fuzzyCandidates.add(it) }
         if (frontInput !== backInput) fuzzyMatch(frontInput)?.let { fuzzyCandidates.add(it) }
-        val fuzzyTopScore = fuzzyCandidates.maxOfOrNull { it.score } ?: 0.0
-        val fuzzyBest = fuzzyCandidates.lastOrNull { it.score == fuzzyTopScore }
+        val fuzzyBest = fuzzyCandidates.lastOrNull()
 
         if (fuzzyBest != null) {
             Log.d(TAG, "확장팩 유사도 매칭: '${fuzzyBest.expansion}' > '${fuzzyBest.anchor}' (점수=${"%.2f".format(fuzzyBest.score)}, 키=${fuzzyBest.key.take(15)}...)")

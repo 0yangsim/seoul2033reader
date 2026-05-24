@@ -196,7 +196,7 @@ object WikiUrlResolver {
     private var dynamicSeasonStories: Set<String> = emptySet()
     private var loaded = false
 
-    suspend fun loadStoryLists(ctx: android.content.Context? = null) = withContext(Dispatchers.IO) {
+    suspend fun loadStoryLists() = withContext(Dispatchers.IO) {
         if (loaded) return@withContext
         try {
             dynamicLevelStories = fetchTitlesFromWiki("$BASE/w/서울%202033/랜덤%20인카운터/레벨%20인카운터")
@@ -227,7 +227,7 @@ object WikiUrlResolver {
 
     // ── 메인 resolve 함수 ─────────────────────────────────────────────────────
 
-    fun resolve(rawText: String, ctx: android.content.Context? = null): ResolvedEntry? {
+    fun resolve(rawText: String): ResolvedEntry? {
         val cleaned = rawText.trim()
 
         // ────────────────────────────────────────────────────────────────────
@@ -272,7 +272,7 @@ object WikiUrlResolver {
         //
         // 이 단계에서 매칭되면 페이지번호는 이미 추출된 값을 전달.
         // ────────────────────────────────────────────────────────────────────
-        val step0result = resolveByTitleScan(beforePage, ctx, pageNum)
+        val step0result = resolveByTitleScan(beforePage, pageNum)
         if (step0result != null) {
             Log.d(TAG, "STEP0 제목 직접 매칭 성공: ${step0result.title}")
             return step0result
@@ -360,23 +360,8 @@ object WikiUrlResolver {
                     url = buildUrl("랜덤 인카운터/$hardTitle")
                 )
             } else {
-                // 사용자 등록 확장팩 탐색
-                val customExpansions = ctx?.let { CustomItemManager.getExpansions(it) } ?: emptySet()
-                val customTitle = exactMatchPrecise(ocrTitle, customExpansions)
-                    ?: fuzzyFind(ocrTitle, customExpansions)
-
-                if (customTitle == null) {
-                    // 태그도 없고 확장팩 매칭 실패 → 기본 인카운터로 처리
-                    Log.d(TAG, "태그 없음 + 확장팩 매칭 실패 → null 반환")
-                    null
-                } else {
-                    Log.d(TAG, "사용자 등록 확장팩 매칭: '$customTitle'")
-                    ResolvedEntry(
-                        title = customTitle, pageNum = pageNum,
-                        type = EntryType.EXPANSION,
-                        url = buildUrl("랜덤 인카운터/$customTitle")
-                    )
-                }
+                Log.d(TAG, "태그 없음 + 확장팩 매칭 실패 → null 반환")
+                null
             }
         } else {
             // ── [Case 2] 이야기 계열 ─────────────────────────────────────
@@ -424,9 +409,7 @@ object WikiUrlResolver {
      *
      * 오매칭 방지: 제목 길이 4글자(normalize 후) 이상만 허용
      */
-    private fun resolveByTitleScan(cleaned: String, ctx: android.content.Context? = null, pageNum: String = "?"): ResolvedEntry? {
-        val cleanedNorm = normalize(cleaned)
-
+    private fun resolveByTitleScan(cleaned: String, pageNum: String = "?"): ResolvedEntry? {
         // 1) [이야기] 태그로 이야기 계열 판별
         val lines = cleaned.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
         val storyTagIdx = lines.indexOfFirst { line ->
@@ -492,11 +475,9 @@ object WikiUrlResolver {
         //    뒤쪽에서 못 찾은 경우에만 전체를 탐색해 짧은 인카운터 텍스트도 커버한다.
         val allNonEmptyLines = cleaned.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
         val tailNorm = normalize(allNonEmptyLines.takeLast(1).joinToString("\n"))
-        val customExpansions0 = ctx?.let { CustomItemManager.getExpansions(it) } ?: emptySet()
-        val allExpansionCandidates = EXPANSION_LIST + customExpansions0
 
         // 2-a) 뒤쪽 1줄에서만 탐색 (전체 탐색 폴백 제거 — 가구/아이템 이름 오인식 방지)
-        val hardExpansionHit = allExpansionCandidates
+        val hardExpansionHit = EXPANSION_LIST
             .filter { candidate ->
                 val cn = normalize(candidate)
                 cn.length >= 2 && tailNorm.contains(cn)
@@ -504,8 +485,7 @@ object WikiUrlResolver {
             .maxByOrNull { normalize(it).length }
 
         if (hardExpansionHit != null) {
-            val isCustom = hardExpansionHit in customExpansions0
-            Log.d(TAG, "STEP0-2 ${if (isCustom) "사용자 등록" else "하드코딩"} 확장팩 매칭[뒤쪽1줄]: '$hardExpansionHit'")
+            Log.d(TAG, "STEP0-2 확장팩 매칭[뒤쪽1줄]: '$hardExpansionHit'")
             return ResolvedEntry(
                 title = hardExpansionHit, pageNum = pageNum,
                 type = EntryType.EXPANSION,
@@ -514,10 +494,7 @@ object WikiUrlResolver {
         }
 
         // 3) 이야기/레벨/시즌 이름 포함 매칭 (이야기 태그 없이도)
-        val customStories0 = ctx?.let { CustomItemManager.getStories(it) } ?: emptySet()
-        val customLevels0   = ctx?.let { CustomItemManager.getLevels(it) } ?: emptySet()
-        val customSeasons0  = ctx?.let { CustomItemManager.getSeasons(it) } ?: emptySet()
-        val allStories = STORY_LIST + customStories0 + LEVEL_LIST + customLevels0 + SEASON_LIST + customSeasons0
+        val allStories = STORY_LIST + LEVEL_LIST + SEASON_LIST
         // 확장팩과 동일하게 뒤쪽 1줄에서만 탐색 (가구/아이템 이름 오인식 방지)
         val storyHit = allStories
             .filter { candidate ->
@@ -539,11 +516,9 @@ object WikiUrlResolver {
                     url = buildUrl("랜덤 인카운터/주요 스토리 인카운터")
                 )
             }
-            val customLevels0b  = ctx?.let { CustomItemManager.getLevels(it) } ?: emptySet()
-            val customSeasons0b = ctx?.let { CustomItemManager.getSeasons(it) } ?: emptySet()
             val type = when (storyHit) {
-                in LEVEL_LIST, in customLevels0b  -> EntryType.LEVEL
-                in SEASON_LIST, in customSeasons0b -> EntryType.SEASON
+                in LEVEL_LIST  -> EntryType.LEVEL
+                in SEASON_LIST -> EntryType.SEASON
                 else -> EntryType.STORY
             }
             return makeStoryEntry(storyHit, pageNum, type)
@@ -555,13 +530,11 @@ object WikiUrlResolver {
     // ── 제목만으로 카테고리 자동 판별 (선택지 오인식용) ─────────────────────
 
     private fun resolveByTitle(candidate: String, pageNum: String = ""): ResolvedEntry? {
-        val customExpansions1 = emptySet<String>() // ctx 없는 경로, 하드코딩 목록만 사용
-        val allExpansions = EXPANSION_LIST + customExpansions1
         val aliasResolved = resolveAlias(candidate)
         val title = aliasResolved ?: candidate
 
         // 확장팩 정확 일치 우선
-        exactMatchPrecise(title, allExpansions)?.let { matched ->
+        exactMatchPrecise(title, EXPANSION_LIST)?.let { matched ->
             return ResolvedEntry(
                 title = matched, pageNum = pageNum,
                 type = EntryType.EXPANSION,
@@ -571,7 +544,7 @@ object WikiUrlResolver {
         // 이야기 계열 정확 일치
         resolveStoryExact(title, pageNum)?.let { return it }
         // 확장팩 fuzzy
-        fuzzyFind(title, allExpansions)?.let { matched ->
+        fuzzyFind(title, EXPANSION_LIST)?.let { matched ->
             return ResolvedEntry(
                 title = matched, pageNum = pageNum,
                 type = EntryType.EXPANSION,

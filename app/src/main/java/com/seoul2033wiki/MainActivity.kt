@@ -6,8 +6,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.ViewFlipper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import kotlinx.coroutines.CoroutineScope
@@ -17,17 +19,9 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var viewFlipper: ViewFlipper
     private lateinit var statusText: TextView
-    private lateinit var btnRequestOverlay: Button
-    private lateinit var btnRequestAccessibility: Button
-    private lateinit var btnStart: Button
-    private lateinit var btnStop: Button
-    private lateinit var btnSavePosition: Button
-    private lateinit var btnResetPosition: Button
-    private lateinit var btnManageItems: Button
-
     private lateinit var switchAutoStart: SwitchCompat
-
     private lateinit var prefs: SharedPreferences
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -37,64 +31,125 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         prefs = getSharedPreferences("settings", MODE_PRIVATE)
+        viewFlipper = findViewById(R.id.viewFlipper)
 
+        setupMainScreen()
+        setupSettingsScreen()
+        setupHelpScreen()
+    }
+
+    // ── 메인 화면 ──────────────────────────────────────────────────────────
+    private fun setupMainScreen() {
         statusText = findViewById(R.id.statusText)
-
-        btnRequestOverlay = findViewById(R.id.btnRequestOverlay)
-        btnRequestAccessibility = findViewById(R.id.btnRequestAccessibility)
-
-        btnStart = findViewById(R.id.btnStart)
-        btnStop = findViewById(R.id.btnStop)
-        btnSavePosition = findViewById(R.id.btnSavePosition)
-        btnResetPosition = findViewById(R.id.btnResetPosition)
-        btnManageItems = findViewById(R.id.btnManageItems)
-
         switchAutoStart = findViewById(R.id.switchAutoStart)
 
         switchAutoStart.isChecked = prefs.getBoolean(KEY_AUTO_START, false)
         switchAutoStart.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean(KEY_AUTO_START, isChecked).apply()
-            val msg = if (isChecked)
-                "서울2033 실행 시 자동으로 오버레이가 시작됩니다."
-            else
-                "자동 시작이 꺼졌습니다."
-            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                if (isChecked) "서울2033 실행 시 자동으로 오버레이가 시작됩니다." else "자동 시작이 꺼졌습니다.",
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
-        btnRequestOverlay.setOnClickListener {
-            requestOverlayPermission()
+        findViewById<Button>(R.id.btnRequestOverlay).setOnClickListener { requestOverlayPermission() }
+        findViewById<Button>(R.id.btnRequestAccessibility).setOnClickListener { requestAccessibilityPermission() }
+        findViewById<Button>(R.id.btnStart).setOnClickListener { startOverlay() }
+        findViewById<Button>(R.id.btnStop).setOnClickListener { stopOverlay() }
+        findViewById<Button>(R.id.btnSettings).setOnClickListener { viewFlipper.displayedChild = SCREEN_SETTINGS }
+        findViewById<Button>(R.id.btnHelp).setOnClickListener { viewFlipper.displayedChild = SCREEN_HELP }
+    }
+
+    // ── 설정 화면 ──────────────────────────────────────────────────────────
+    private fun setupSettingsScreen() {
+        findViewById<TextView>(R.id.btnSettingsBack).setOnClickListener {
+            viewFlipper.displayedChild = SCREEN_MAIN
         }
 
-        btnRequestAccessibility.setOnClickListener {
-            requestAccessibilityPermission()
+        // 버튼 위치
+        findViewById<Button>(R.id.btnSavePosition).setOnClickListener {
+            startService(Intent(this, OverlayService::class.java).apply {
+                action = ACTION_SAVE_POSITION
+            })
+        }
+        findViewById<Button>(R.id.btnResetPosition).setOnClickListener {
+            startService(Intent(this, OverlayService::class.java).apply {
+                action = ACTION_RESET_POSITION
+            })
         }
 
-        btnStart.setOnClickListener {
-            startOverlay()
-        }
+        // 터치 ON일 때 투명도
+        val tvAlphaOnLabel = findViewById<TextView>(R.id.tvAlphaOnLabel)
+        val seekAlphaOn = findViewById<SeekBar>(R.id.seekAlphaOn)
+        val savedAlphaOn = prefs.getInt(KEY_ALPHA_ON, 100)
+        tvAlphaOnLabel.text = "터치 ON일 때: $savedAlphaOn%"
+        seekAlphaOn.progress = savedAlphaOn
+        seekAlphaOn.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                tvAlphaOnLabel.text = "터치 ON일 때: $progress%"
+                if (fromUser) {
+                    prefs.edit().putInt(KEY_ALPHA_ON, progress).apply()
+                    startService(Intent(this@MainActivity, OverlayService::class.java).apply {
+                        action = ACTION_SET_ALPHA_ON
+                        putExtra(EXTRA_ALPHA_VALUE, progress)
+                    })
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        })
 
-        btnStop.setOnClickListener {
-            stopOverlay()
-        }
+        // 터치 OFF일 때 투명도
+        val tvAlphaOffLabel = findViewById<TextView>(R.id.tvAlphaOffLabel)
+        val seekAlphaOff = findViewById<SeekBar>(R.id.seekAlphaOff)
+        val savedAlphaOff = prefs.getInt(KEY_ALPHA_OFF, 60)
+        tvAlphaOffLabel.text = "터치 OFF일 때: $savedAlphaOff%"
+        seekAlphaOff.progress = savedAlphaOff
+        seekAlphaOff.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                tvAlphaOffLabel.text = "터치 OFF일 때: $progress%"
+                if (fromUser) {
+                    prefs.edit().putInt(KEY_ALPHA_OFF, progress).apply()
+                    startService(Intent(this@MainActivity, OverlayService::class.java).apply {
+                        action = ACTION_SET_ALPHA_OFF
+                        putExtra(EXTRA_ALPHA_VALUE, progress)
+                    })
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        })
 
-        btnSavePosition.setOnClickListener {
-            saveCurrentOverlayPosition()
-        }
-
-        btnResetPosition.setOnClickListener {
-            resetOverlayPosition()
-        }
-
-        btnManageItems.setOnClickListener {
-            startActivity(Intent(this, CustomItemActivity::class.java))
+        // 예시 팝업 보기
+        findViewById<Button>(R.id.btnShowExample).setOnClickListener {
+            startService(Intent(this, OverlayService::class.java).apply {
+                action = ACTION_SHOW_EXAMPLE
+            })
         }
     }
 
+    // ── 도움말 화면 ────────────────────────────────────────────────────────
+    private fun setupHelpScreen() {
+        findViewById<TextView>(R.id.btnHelpBack).setOnClickListener {
+            viewFlipper.displayedChild = SCREEN_MAIN
+        }
+    }
+
+    // ── 공통 ───────────────────────────────────────────────────────────────
     override fun onResume() {
         super.onResume()
         updateStatus()
-        scope.launch {
-            UpdateChecker.check(this@MainActivity)
+        scope.launch { UpdateChecker.check(this@MainActivity) }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (viewFlipper.displayedChild != SCREEN_MAIN) {
+            viewFlipper.displayedChild = SCREEN_MAIN
+        } else {
+            @Suppress("DEPRECATION")
+            super.onBackPressed()
         }
     }
 
@@ -109,12 +164,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestOverlayPermission() {
         if (!Settings.canDrawOverlays(this)) {
-            startActivity(
-                Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-            )
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
         } else {
             Toast.makeText(this, "이미 오버레이 권한이 허용되어 있습니다.", Toast.LENGTH_SHORT).show()
         }
@@ -125,31 +175,22 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
     }
 
-    private fun startOverlay() {
-        startService(Intent(this, OverlayService::class.java))
-    }
-
-    private fun stopOverlay() {
-        stopService(Intent(this, OverlayService::class.java))
-    }
-
-    private fun saveCurrentOverlayPosition() {
-        val intent = Intent(this, OverlayService::class.java).apply {
-            action = ACTION_SAVE_POSITION
-        }
-        startService(intent)
-    }
-
-    private fun resetOverlayPosition() {
-        val intent = Intent(this, OverlayService::class.java).apply {
-            action = ACTION_RESET_POSITION
-        }
-        startService(intent)
-    }
+    private fun startOverlay() { startService(Intent(this, OverlayService::class.java)) }
+    private fun stopOverlay()  { stopService(Intent(this, OverlayService::class.java)) }
 
     companion object {
-        const val KEY_AUTO_START = "auto_start_overlay"
-        const val ACTION_SAVE_POSITION = "action_save_position"
+        private const val SCREEN_MAIN     = 0
+        private const val SCREEN_SETTINGS = 1
+        private const val SCREEN_HELP     = 2
+
+        const val KEY_AUTO_START        = "auto_start_overlay"
+        const val KEY_ALPHA_ON          = "web_alpha_on"
+        const val KEY_ALPHA_OFF         = "web_alpha_off"
+        const val ACTION_SAVE_POSITION  = "action_save_position"
         const val ACTION_RESET_POSITION = "action_reset_position"
+        const val ACTION_SET_ALPHA_ON   = "action_set_alpha_on"
+        const val ACTION_SET_ALPHA_OFF  = "action_set_alpha_off"
+        const val ACTION_SHOW_EXAMPLE   = "action_show_example"
+        const val EXTRA_ALPHA_VALUE     = "extra_alpha_value"
     }
 }

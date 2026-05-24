@@ -8,20 +8,20 @@
         "source": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-main-33:\\drawable\\overlay_btn_bg_active.xml"
     },
     {
-        "merged": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-debug-31:\\xml_accessibility_service_config.xml.flat",
-        "source": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-main-33:\\xml\\accessibility_service_config.xml"
-    },
-    {
         "merged": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-debug-31:\\mipmap-xxhdpi_ic_launcher_round.png.flat",
         "source": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-main-33:\\mipmap-xxhdpi\\ic_launcher_round.png"
     },
     {
-        "merged": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-debug-31:\\drawable_overlay_btn_bg.xml.flat",
-        "source": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-main-33:\\drawable\\overlay_btn_bg.xml"
+        "merged": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-debug-31:\\xml_accessibility_service_config.xml.flat",
+        "source": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-main-33:\\xml\\accessibility_service_config.xml"
     },
     {
         "merged": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-debug-31:\\mipmap-xxxhdpi_ic_launcher.png.flat",
         "source": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-main-33:\\mipmap-xxxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-debug-31:\\drawable_overlay_btn_bg.xml.flat",
+        "source": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-main-33:\\drawable\\overlay_btn_bg.xml"
     },
     {
         "merged": "C:\\Users\\sihu0\\.gradle\\daemon\\9.0.0\\com.seoul2033wiki.app-debug-31:\\mipmap-mdpi_ic_launcher_round.png.flat",

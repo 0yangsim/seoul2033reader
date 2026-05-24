@@ -825,9 +825,13 @@ object MainStoryEncounterResolver {
             val bucket = prefixIndex[prefix] ?: continue
             for ((key, anchor) in bucket) {
                 if (!seen.add(key)) continue
-                if (key.length >= 6 && cleanInput.contains(key) && key.length > exactBestKey.length) {
-                    exactBestKey = key
-                    exactBestAnchor = anchor
+                if (key.length >= 6 && cleanInput.contains(key)) {
+                    val pos = cleanInput.indexOf(key)
+                    val bestPos = if (exactBestKey.isEmpty()) -1 else cleanInput.indexOf(exactBestKey)
+                    if (pos >= bestPos) {
+                        exactBestKey = key
+                        exactBestAnchor = anchor
+                    }
                 }
             }
         }
@@ -854,9 +858,13 @@ object MainStoryEncounterResolver {
                 if (!halfSeen.add(key)) continue
                 val mid = key.length / 2
                 val secondHalf = key.substring(mid)
-                if (secondHalf.length >= 6 && cleanInput.contains(secondHalf) && key.length > halfBestKey.length) {
-                    halfBestKey = key
-                    halfBestAnchor = anchor
+                if (secondHalf.length >= 6 && cleanInput.contains(secondHalf)) {
+                    val pos = cleanInput.indexOf(secondHalf)
+                    val bestPos = if (halfBestKey.isEmpty()) -1 else cleanInput.indexOf(halfBestKey.substring(halfBestKey.length / 2))
+                    if (pos >= bestPos) {
+                        halfBestKey = key
+                        halfBestAnchor = anchor
+                    }
                 }
             }
         }
@@ -886,7 +894,7 @@ object MainStoryEncounterResolver {
             }
         }
 
-        val best = candidates.maxByOrNull { it.score }
+        val best = candidates.lastOrNull()
 
         if (best != null) {
             Log.d(TAG, "주요 스토리 유사도 매칭: '${best.anchor}' (점수=${"%.2f".format(best.score)}, 키=${best.key.take(15)}...)")

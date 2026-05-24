@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.seoul2033wiki"
-    android:versionCode="15"
-    android:versionName="1.7" >
+    android:versionCode="16"
+    android:versionName="1.8" >
 
     <uses-sdk
         android:minSdkVersion="29"
@@ -50,12 +50,6 @@
             android:name="com.seoul2033wiki.ResultPopupActivity"
             android:exported="false"
             android:theme="@style/Theme.Seoul2033Wiki.Dialog" />
-
-        <!-- 이야기/레벨/시즌패스/확장팩 항목 관리 Activity -->
-        <activity
-            android:name="com.seoul2033wiki.CustomItemActivity"
-            android:exported="false"
-            android:label="항목 관리" />
 
         <!-- 오버레이 서비스 -->
         <service
