@@ -158,8 +158,9 @@ class OverlayService : Service() {
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            y = (72 * density).toInt()
+            gravity = Gravity.CENTER
+            x = 0
+            y = 0
         }
         dropZoneView = view
         try { windowManager.addView(view, params) } catch (_: Exception) {}

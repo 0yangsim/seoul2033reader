@@ -500,7 +500,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="1. 오버레이 권한과 접근성 서비스를 허용합니다.\n2. [오버레이 시작]을 누르면 게임 화면 위에 Read 버튼이 나타납니다.\n3. 서울2033 인카운터 화면에서 Read 버튼을 탭하면 나무위키 항목을 찾아줍니다.\n4. 중지 버튼을 누르거나 버튼을 아래쪽 x로 드래그하면 꺼집니다."
+                            android:text="1. 오버레이 권한과 접근성 서비스를 허용합니다.\n2. [오버레이 시작]을 누르면 게임 화면 위에 Read 버튼이 나타납니다.\n3. 서울2033 인카운터 화면에서 Read 버튼을 탭하면 나무위키 항목을 찾아줍니다.\n4. 중지 버튼을 누르거나 버튼을 중앙의 x로 드래그하면 꺼집니다."
                             android:textColor="#AAAAAA"
                             android:textSize="13sp"
                             android:fontFamily="@font/kopub_batang"
@@ -593,7 +593,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="• Read 버튼을 원하는 위치로 드래그한 뒤 [설정 → 현재 버튼 위치 기억]을 누르면 앱 재시작 후에도 유지됩니다.\n• [버튼 위치 초기화]를 누르면 상단 가운데로 돌아갑니다."
+                            android:text="• Read 버튼을 원하는 위치로 드래그한 뒤 [설정 → 현재 버튼 위치 기억]을 누르면 버튼이 그 자리에서 생성됩니다.\n• [버튼 위치 초기화]를 누르면 상단 가운데로 돌아갑니다."
                             android:textColor="#AAAAAA"
                             android:textSize="13sp"
                             android:fontFamily="@font/kopub_batang"
