@@ -894,7 +894,7 @@ object MainStoryEncounterResolver {
             }
         }
 
-        val best = candidates.lastOrNull()
+        val best = candidates.maxWithOrNull(compareBy({ it.score }, { candidates.indexOf(it) }))
 
         if (best != null) {
             Log.d(TAG, "주요 스토리 유사도 매칭: '${best.anchor}' (점수=${"%.2f".format(best.score)}, 키=${best.key.take(15)}...)")
