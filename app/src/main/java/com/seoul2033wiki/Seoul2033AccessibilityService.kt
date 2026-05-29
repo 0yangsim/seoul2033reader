@@ -49,6 +49,18 @@ class Seoul2033AccessibilityService : AccessibilityService() {
             instance?.isGameForeground = false
             Log.d(TAG, "오버레이 수동 중지 감지 → 자동 시작 플래그 리셋")
         }
+
+        // OverlayService.onCreate()에서 호출 — 수동 시작 시에도 플래그 동기화
+        fun notifyOverlayStarted() {
+            instance?.isOverlayRunning = true
+            // 게임이 현재 포그라운드에 있는지 확인해서 isGameForeground 동기화
+            val inst = instance ?: return
+            val gameVisible = inst.windows?.any {
+                isTargetPackage(it.root?.packageName?.toString() ?: "")
+            } ?: false
+            inst.isGameForeground = gameVisible
+            Log.d(TAG, "오버레이 수동 시작 감지 → 플래그 동기화 (게임포그라운드=$gameVisible)")
+        }
     }
 
     private var isGameForeground = false
