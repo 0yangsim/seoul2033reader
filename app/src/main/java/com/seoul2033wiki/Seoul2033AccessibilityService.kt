@@ -86,6 +86,22 @@ class Seoul2033AccessibilityService : AccessibilityService() {
     override fun onInterrupt() {}
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // 게임 윈도우가 완전히 사라졌는지 감지 (앱 완전 종료 시)
+        if (event?.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
+            if (!isAutoStartEnabled(this)) return
+            if (!isOverlayRunning) return
+            val gameVisible = windows?.any {
+                isTargetPackage(it.root?.packageName?.toString() ?: "")
+            } ?: false
+            if (!gameVisible) {
+                isGameForeground = false
+                isOverlayRunning = false
+                Log.d(TAG, "서울2033 윈도우 사라짐 감지 → 오버레이 자동 종료")
+                stopService(Intent(this, OverlayService::class.java))
+            }
+            return
+        }
+
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         if (!isAutoStartEnabled(this)) return
 

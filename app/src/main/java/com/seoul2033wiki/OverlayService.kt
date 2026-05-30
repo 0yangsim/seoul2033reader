@@ -95,6 +95,7 @@ class OverlayService : Service() {
             }
         }
         setupOverlay()
+        Seoul2033AccessibilityService.notifyOverlayStarted()
         return START_NOT_STICKY
     }
 
