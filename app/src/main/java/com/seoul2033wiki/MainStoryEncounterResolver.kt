@@ -779,7 +779,7 @@ object MainStoryEncounterResolver {
     // ── 매칭 로직 ────────────────────────────────────────────────────────────
 
     private fun normalize(s: String) =
-        s.replace(Regex("""[\s·!?.,:'"\u2018\u2019\u201C\u201Dー–—\-]"""), "").lowercase()
+        s.replace(Regex("""[\s·!?.,:'"\u2018\u2019\u201C\u201D<>ー–—\-]"""), "").lowercase()
 
     // ── prefix 버킷 인덱스 ────────────────────────────────────────────────
     private const val PREFIX_LEN = 5

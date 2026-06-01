@@ -2599,7 +2599,7 @@ object BasicEncounterResolver {
 
 
     private fun normalize(s: String) =
-        s.replace(Regex("""[\s·!?.,:'"\u2018\u2019\u201C\u201Dー–—\-]"""), "").lowercase()
+        s.replace(Regex("""[\s·!?.,:'"\u2018\u2019\u201C\u201D<>ー–—\-]"""), "").lowercase()
 
     // ── prefix 버킷 인덱스 ────────────────────────────────────────────────
     // 키를 앞 PREFIX_LEN글자로 그룹화해 미리 저장.

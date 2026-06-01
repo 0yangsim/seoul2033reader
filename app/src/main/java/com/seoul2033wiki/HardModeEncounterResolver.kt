@@ -169,29 +169,44 @@ object HardModeEncounterResolver {
     )
 
     private fun normalize(s: String) =
-        s.replace(Regex("""[\s·!?.,:'"ー–—\-]"""), "").lowercase()
+        s.replace(Regex("""[\s·!?.,:'"<>ー–—\-]"""), "").lowercase()
 
 
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
 
-        val matched = ENCOUNTER_MAP
-            .filter { (key, _) -> key.length >= 8 && cleanInput.contains(key) }
-            .let { hits -> val max = hits.maxOfOrNull { (k, _) -> k.length } ?: 0; hits.lastOrNull { (k, _) -> k.length == max } }
+        // A-B-A 문제 대응: lastIndexOf 기준으로 가장 마지막에 등장한 키가 승리
+        // seen: key → 마지막 등장 위치 (중복 키 재평가 방지)
+        val seen = HashMap<String, Int>()
+        var bestKey = ""
+        var bestAnchor = ""
 
-        if (matched == null) {
+        for ((key, anchor) in ENCOUNTER_MAP) {
+            if (key.length < 8) continue
+            val pos = cleanInput.lastIndexOf(key)
+            if (pos < 0) continue
+            val prevPos = seen[key] ?: -1
+            if (pos <= prevPos) continue
+            seen[key] = pos
+            val bestPos = if (bestKey.isEmpty()) -1 else seen[bestKey]!!
+            if (pos >= bestPos) {
+                bestKey = key
+                bestAnchor = anchor
+            }
+        }
+
+        if (bestKey.isEmpty()) {
             Log.d(TAG, "하드 모드 인카운터 매칭 실패")
             return null
         }
 
-        val anchor = matched.second
-        Log.d(TAG, "하드 모드 인카운터 매칭: '$anchor' (키=${matched.first.take(15)}...)")
+        Log.d(TAG, "하드 모드 인카운터 매칭: '$bestAnchor' (키=${bestKey.take(15)}...)")
 
         return ResolvedEntry(
-            title = anchor,
+            title = bestAnchor,
             pageNum = "",
             type = EntryType.HARD_MODE_ENCOUNTER,
-            url = buildUrl(anchor)
+            url = buildUrl(bestAnchor)
         )
     }
 
