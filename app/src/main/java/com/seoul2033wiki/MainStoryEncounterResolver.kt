@@ -703,7 +703,7 @@ object MainStoryEncounterResolver {
         "기술자들이뭔가를열심히만들고있는자동차정비소를발견했습니다기술자들은한시라도뭘만들고있지않으면좀이쑤시는법이죠" to "자동차 정비소",
 
         // 3.6.4.5 불꽃 일렉 기타
-        "통기타를불꽃일렉기타로개조해주며화염방사기도덤으로얻을수있다" to "불꽃 일렉 기타",
+        "야야야야야그기타뭐야엄청쿨한걸내가더쓸모있게만들어주지" to "불꽃 일렉 기타",
 
         // 3.6.4.6 우산 개조
         "권총우산을조립식우산형저격소총으로개조해준다" to "우산 개조",
@@ -817,7 +817,7 @@ object MainStoryEncounterResolver {
         val cleanInput = normalize(rawText)
 
         // ── 1차: prefix 인덱스로 후보 추출 후 완전 포함 매칭 ────────────
-        val seen = HashSet<String>()
+        val seen = HashMap<String, Int>()
         var exactBestKey = ""
         var exactBestAnchor = ""
 
@@ -825,14 +825,16 @@ object MainStoryEncounterResolver {
             val prefix = cleanInput.substring(start, start + PREFIX_LEN)
             val bucket = prefixIndex[prefix] ?: continue
             for ((key, anchor) in bucket) {
-                if (!seen.add(key)) continue
-                if (key.length >= 6 && cleanInput.contains(key)) {
-                    val pos = cleanInput.indexOf(key)
-                    val bestPos = if (exactBestKey.isEmpty()) -1 else cleanInput.indexOf(exactBestKey)
-                    if (pos >= bestPos) {
-                        exactBestKey = key
-                        exactBestAnchor = anchor
-                    }
+                if (key.length < 6) continue
+                val pos = cleanInput.lastIndexOf(key)
+                if (pos < 0) continue
+                val prevPos = seen[key] ?: -1
+                if (pos <= prevPos) continue
+                seen[key] = pos
+                val bestPos = if (exactBestKey.isEmpty()) -1 else seen[exactBestKey]!!
+                if (pos >= bestPos) {
+                    exactBestKey = key
+                    exactBestAnchor = anchor
                 }
             }
         }
@@ -846,26 +848,26 @@ object MainStoryEncounterResolver {
         }
 
         // ── 2차: 후반부 prefix 인덱스로 절반 포함 매칭 ──────────────────
-        // 전반부는 위 1차에서 이미 커버됨. 후반부 prefix만 별도 인덱스로 검사.
-        val halfSeen = HashSet<String>()
+        val halfSeen = HashMap<String, Int>()
         var halfBestKey = ""
         var halfBestAnchor = ""
 
         for (start in 0..cleanInput.length - PREFIX_LEN) {
             val prefix = cleanInput.substring(start, start + PREFIX_LEN)
-            // 후반부 인덱스 검사
             val sBucket = suffixIndex[prefix] ?: continue
             for ((key, anchor) in sBucket) {
-                if (!halfSeen.add(key)) continue
                 val mid = key.length / 2
                 val secondHalf = key.substring(mid)
-                if (secondHalf.length >= 6 && cleanInput.contains(secondHalf)) {
-                    val pos = cleanInput.indexOf(secondHalf)
-                    val bestPos = if (halfBestKey.isEmpty()) -1 else cleanInput.indexOf(halfBestKey.substring(halfBestKey.length / 2))
-                    if (pos >= bestPos) {
-                        halfBestKey = key
-                        halfBestAnchor = anchor
-                    }
+                if (secondHalf.length < 6) continue
+                val pos = cleanInput.lastIndexOf(secondHalf)
+                if (pos < 0) continue
+                val prevPos = halfSeen[key] ?: -1
+                if (pos <= prevPos) continue
+                halfSeen[key] = pos
+                val bestPos = if (halfBestKey.isEmpty()) -1 else halfSeen[halfBestKey]!!
+                if (pos >= bestPos) {
+                    halfBestKey = key
+                    halfBestAnchor = anchor
                 }
             }
         }

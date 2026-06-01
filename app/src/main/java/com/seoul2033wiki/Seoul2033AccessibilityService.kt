@@ -43,6 +43,10 @@ class Seoul2033AccessibilityService : AccessibilityService() {
             ctx.getSharedPreferences("settings", Context.MODE_PRIVATE)
                 .getBoolean(MainActivity.KEY_AUTO_START, false)
 
+        fun isAutoStopEnabled(ctx: Context): Boolean =
+            ctx.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                .getBoolean(MainActivity.KEY_AUTO_STOP, false)
+
         // OverlayService.onDestroy()에서 호출 — 수동 중지 시 플래그 리셋
         fun notifyOverlayStopped() {
             instance?.isOverlayRunning = false
@@ -88,7 +92,7 @@ class Seoul2033AccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // 게임 윈도우가 완전히 사라졌는지 감지 (앱 완전 종료 시)
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
-            if (!isAutoStartEnabled(this)) return
+            if (!isAutoStopEnabled(this)) return
             if (!isOverlayRunning) return
             val gameVisible = windows?.any {
                 isTargetPackage(it.root?.packageName?.toString() ?: "")
@@ -117,6 +121,11 @@ class Seoul2033AccessibilityService : AccessibilityService() {
             }
             // 서울2033이 아닌 앱이 포그라운드로 왔고, 서울2033이 켜져 있던 상태였으면 종료
             !isTargetPackage(pkg) && isGameForeground && isOverlayRunning -> {
+                if (!isAutoStopEnabled(this)) {
+                    // 자동 종료 꺼져 있으면 포그라운드 플래그만 갱신
+                    isGameForeground = false
+                    return
+                }
                 // 실제로 서울2033 윈도우가 사라졌는지 확인 (화면 전환 오탐 방지)
                 val gameStillVisible = windows?.any {
                     isTargetPackage(it.root?.packageName?.toString() ?: "")

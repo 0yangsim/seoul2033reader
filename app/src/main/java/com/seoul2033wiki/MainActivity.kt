@@ -1,5 +1,6 @@
 package com.seoul2033wiki
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
@@ -10,6 +11,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.ViewFlipper
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import kotlinx.coroutines.CoroutineScope
@@ -22,20 +24,49 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewFlipper: ViewFlipper
     private lateinit var statusText: TextView
     private lateinit var switchAutoStart: SwitchCompat
+    private lateinit var switchAutoStop: SwitchCompat
     private lateinit var prefs: SharedPreferences
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
         prefs = getSharedPreferences("settings", MODE_PRIVATE)
         viewFlipper = findViewById(R.id.viewFlipper)
 
+        showAccessibilityDisclosureIfNeeded()
         setupMainScreen()
         setupSettingsScreen()
         setupHelpScreen()
+    }
+
+    // ── 접근성 서비스 명시적 공개 동의 ───────────────────────────────────────
+    private fun showAccessibilityDisclosureIfNeeded() {
+        if (prefs.getBoolean("accessibility_disclosed", false)) return
+
+        AlertDialog.Builder(this)
+            .setTitle("접근성 서비스 사용 안내")
+            .setMessage("""
+                서울2033 리더는 게임 화면의 텍스트를 읽기 위해 접근성 서비스(AccessibilityService)를 사용합니다.
+
+                • 수집 정보: 서울2033 게임 화면에 표시된 텍스트
+                • 사용 목적: 나무위키 항목 자동 검색
+                • 외부 전송: 없음 (기기 내에서만 처리되며 어떠한 데이터도 외부로 전송되지 않습니다)
+
+                접근성 서비스는 위 목적 외에 사용되지 않습니다.
+                동의하지 않으면 앱을 사용할 수 없습니다.
+            """.trimIndent())
+            .setPositiveButton("동의") { _, _ ->
+                prefs.edit().putBoolean("accessibility_disclosed", true).apply()
+            }
+            .setNegativeButton("거부") { _, _ ->
+                finish()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     // ── 메인 화면 ──────────────────────────────────────────────────────────
@@ -49,6 +80,17 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(
                 this,
                 if (isChecked) "서울2033 실행 시 자동으로 오버레이가 시작됩니다." else "자동 시작이 꺼졌습니다.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        switchAutoStop = findViewById(R.id.switchAutoStop)
+        switchAutoStop.isChecked = prefs.getBoolean(KEY_AUTO_STOP, false)
+        switchAutoStop.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean(KEY_AUTO_STOP, isChecked).apply()
+            Toast.makeText(
+                this,
+                if (isChecked) "서울2033 종료 시 자동으로 오버레이가 꺼집니다." else "자동 종료가 꺼졌습니다.",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -184,6 +226,7 @@ class MainActivity : AppCompatActivity() {
         private const val SCREEN_HELP     = 2
 
         const val KEY_AUTO_START        = "auto_start_overlay"
+        const val KEY_AUTO_STOP         = "auto_stop_overlay"
         const val KEY_ALPHA_ON          = "web_alpha_on"
         const val KEY_ALPHA_OFF         = "web_alpha_off"
         const val ACTION_SAVE_POSITION  = "action_save_position"

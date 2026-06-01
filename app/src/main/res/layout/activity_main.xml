@@ -122,6 +122,50 @@
 
                 </LinearLayout>
 
+                <!-- 자동 종료 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/status_card"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="14dp"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/kopub_batang"
+                            android:text="서울2033 종료 시 자동 종료"
+                            android:textColor="#BBBBBB"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:text="게임이 종료/전환되면 오버레이를 자동으로 끕니다."
+                            android:textColor="#555555"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switchAutoStop"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"/>
+
+                </LinearLayout>
+
                 <!-- 권한 버튼 -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -601,11 +645,11 @@
 
                     </LinearLayout>
 
-                    <!-- 자동 시작 -->
+                    <!-- 자동 시작 / 자동 종료 -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="자동 시작"
+                        android:text="자동 시작 / 자동 종료"
                         android:textSize="10sp"
                         android:fontFamily="@font/kopub_batang"
                         android:textColor="#444444"
@@ -623,7 +667,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="켜두면 서울2033 실행 시 자동으로 오버레이가 시작되고, 종료 시 자동으로 꺼집니다."
+                            android:text="• 자동 시작: 켜두면 서울2033 실행 시 오버레이가 자동으로 시작됩니다.\n• 자동 종료: 켜두면 게임이 완전히 종료될 때 오버레이도 자동으로 꺼집니다.\n• 두 옵션은 독립적으로 설정할 수 있습니다."
                             android:textColor="#AAAAAA"
                             android:textSize="13sp"
                             android:fontFamily="@font/kopub_batang"
