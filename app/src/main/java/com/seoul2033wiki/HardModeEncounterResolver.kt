@@ -169,29 +169,27 @@ object HardModeEncounterResolver {
     )
 
     private fun normalize(s: String) =
-        s.replace(Regex("""[\s·!?.,:'"<>ー–—\-]"""), "").lowercase()
+        s.replace(
+            Regex("""[^\p{L}\p{N}]"""),
+            ""
+        ).lowercase()
 
 
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
 
-        // A-B-A 문제 대응: lastIndexOf 기준으로 가장 마지막에 등장한 키가 승리
-        // seen: key → 마지막 등장 위치 (중복 키 재평가 방지)
-        val seen = HashMap<String, Int>()
         var bestKey = ""
         var bestAnchor = ""
+        var bestPos = -1
 
         for ((key, anchor) in ENCOUNTER_MAP) {
             if (key.length < 8) continue
             val pos = cleanInput.lastIndexOf(key)
             if (pos < 0) continue
-            val prevPos = seen[key] ?: -1
-            if (pos <= prevPos) continue
-            seen[key] = pos
-            val bestPos = if (bestKey.isEmpty()) -1 else seen[bestKey]!!
             if (pos >= bestPos) {
                 bestKey = key
                 bestAnchor = anchor
+                bestPos = pos
             }
         }
 

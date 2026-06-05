@@ -215,7 +215,10 @@ object ActiveEncounterResolver {
 
     // normalize: 공백·특수문자 제거 후 소문자화
     private fun normalize(s: String) =
-        s.replace(Regex("""[\s·!?.,:'<>ー–—\-]"""), "").lowercase()
+        s.replace(
+            Regex("""[^\p{L}\p{N}]"""),
+            ""
+        ).lowercase()
 
     /**
      * OCR 텍스트에서 액티브 인카운터 섹션을 탐지.

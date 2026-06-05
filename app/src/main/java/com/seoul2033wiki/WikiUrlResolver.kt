@@ -767,7 +767,11 @@ object WikiUrlResolver {
         return curr[b.length]
     }
 
-    private fun normalize(s: String) = s.replace(Regex("[\\s·!?.,':ー–—<>-]"), "").lowercase()
+    private fun normalize(s: String) =
+        s.replace(
+            Regex("""[^\p{L}\p{N}]"""),
+            ""
+        ).lowercase()
 
     private fun buildUrl(path: String): String {
         val encoded = URLEncoder.encode("서울 2033/$path", "UTF-8").replace("+", "%20")
