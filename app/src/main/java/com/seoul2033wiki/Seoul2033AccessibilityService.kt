@@ -68,8 +68,10 @@ class Seoul2033AccessibilityService : AccessibilityService() {
     }
 
     private var isGameForeground = false
-    // 오버레이가 실제로 실행 중인지 별도 추적
     private var isOverlayRunning = false
+    // startForegroundService() 직후 연속 이벤트로 인한 즉시 종료 방지
+    private var overlayStartedAt = 0L
+    private val OVERLAY_START_COOLDOWN_MS = 3_000L
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -116,17 +118,21 @@ class Seoul2033AccessibilityService : AccessibilityService() {
             isTargetPackage(pkg) && !isOverlayRunning -> {
                 isGameForeground = true
                 isOverlayRunning = true
+                overlayStartedAt = System.currentTimeMillis()
                 Log.d(TAG, "서울2033 포그라운드 감지 ($pkg) → 오버레이 자동 시작")
                 startForegroundService(Intent(this, OverlayService::class.java))
             }
             // 서울2033이 아닌 앱이 포그라운드로 왔고, 서울2033이 켜져 있던 상태였으면 종료
             !isTargetPackage(pkg) && isGameForeground && isOverlayRunning -> {
                 if (!isAutoStopEnabled(this)) {
-                    // 자동 종료 꺼져 있으면 포그라운드 플래그만 갱신
                     isGameForeground = false
                     return
                 }
-                // 실제로 서울2033 윈도우가 사라졌는지 확인 (화면 전환 오탐 방지)
+                // 시작 직후 쿨다운 중이면 종료 무시 (startForeground 5초 타임아웃 방지)
+                if (System.currentTimeMillis() - overlayStartedAt < OVERLAY_START_COOLDOWN_MS) {
+                    Log.d(TAG, "오버레이 시작 쿨다운 중 → 종료 이벤트 무시")
+                    return
+                }
                 val gameStillVisible = windows?.any {
                     isTargetPackage(it.root?.packageName?.toString() ?: "")
                 } ?: false

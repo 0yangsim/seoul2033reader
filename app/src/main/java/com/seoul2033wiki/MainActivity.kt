@@ -127,11 +127,11 @@ class MainActivity : AppCompatActivity() {
         val tvAlphaOnLabel = findViewById<TextView>(R.id.tvAlphaOnLabel)
         val seekAlphaOn = findViewById<SeekBar>(R.id.seekAlphaOn)
         val savedAlphaOn = prefs.getInt(KEY_ALPHA_ON, 100)
-        tvAlphaOnLabel.text = "터치 ON일 때: $savedAlphaOn%"
+        tvAlphaOnLabel.text = "터치 ON 투명도: $savedAlphaOn%"
         seekAlphaOn.progress = savedAlphaOn
         seekAlphaOn.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                tvAlphaOnLabel.text = "터치 ON일 때: $progress%"
+                tvAlphaOnLabel.text = "터치 ON 투명도: $progress%"
                 if (fromUser) {
                     prefs.edit().putInt(KEY_ALPHA_ON, progress).apply()
                     startService(Intent(this@MainActivity, OverlayService::class.java).apply {
@@ -148,11 +148,11 @@ class MainActivity : AppCompatActivity() {
         val tvAlphaOffLabel = findViewById<TextView>(R.id.tvAlphaOffLabel)
         val seekAlphaOff = findViewById<SeekBar>(R.id.seekAlphaOff)
         val savedAlphaOff = prefs.getInt(KEY_ALPHA_OFF, 60)
-        tvAlphaOffLabel.text = "터치 OFF일 때: $savedAlphaOff%"
+        tvAlphaOffLabel.text = "터치 OFF 투명도: $savedAlphaOff%"
         seekAlphaOff.progress = savedAlphaOff
         seekAlphaOff.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                tvAlphaOffLabel.text = "터치 OFF일 때: $progress%"
+                tvAlphaOffLabel.text = "터치 OFF 투명도: $progress%"
                 if (fromUser) {
                     prefs.edit().putInt(KEY_ALPHA_OFF, progress).apply()
                     startService(Intent(this@MainActivity, OverlayService::class.java).apply {
@@ -164,6 +164,120 @@ class MainActivity : AppCompatActivity() {
             override fun onStartTrackingTouch(sb: SeekBar?) {}
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
+
+        // 터치 ON일 때 너비
+        val tvWidthOnLabel = findViewById<TextView>(R.id.tvWidthOnLabel)
+        val seekWidthOn = findViewById<SeekBar>(R.id.seekWidthOn)
+        val savedWidthOn = prefs.getInt(KEY_WIDTH_ON, DEFAULT_WIDTH_ON)
+        tvWidthOnLabel.text = "터치 ON 너비: $savedWidthOn%"
+        seekWidthOn.progress = savedWidthOn
+        seekWidthOn.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                val clamped = progress.coerceAtLeast(50)
+                if (fromUser && progress < 50) { sb?.progress = 50; return }
+                tvWidthOnLabel.text = "터치 ON 너비: $clamped%"
+                if (fromUser) {
+                    prefs.edit().putInt(KEY_WIDTH_ON, clamped).apply()
+                    startService(Intent(this@MainActivity, OverlayService::class.java).apply {
+                        action = ACTION_SET_SIZE_ON
+                        putExtra(EXTRA_WIDTH_VALUE, clamped)
+                        putExtra(EXTRA_HEIGHT_VALUE, prefs.getInt(KEY_HEIGHT_ON, DEFAULT_HEIGHT_ON))
+                    })
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        })
+
+        // 터치 ON일 때 높이
+        val tvHeightOnLabel = findViewById<TextView>(R.id.tvHeightOnLabel)
+        val seekHeightOn = findViewById<SeekBar>(R.id.seekHeightOn)
+        val savedHeightOn = prefs.getInt(KEY_HEIGHT_ON, DEFAULT_HEIGHT_ON)
+        tvHeightOnLabel.text = "터치 ON 높이: $savedHeightOn%"
+        seekHeightOn.progress = savedHeightOn
+        seekHeightOn.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                tvHeightOnLabel.text = "터치 ON 높이: $progress%"
+                if (fromUser) {
+                    prefs.edit().putInt(KEY_HEIGHT_ON, progress).apply()
+                    startService(Intent(this@MainActivity, OverlayService::class.java).apply {
+                        action = ACTION_SET_SIZE_ON
+                        putExtra(EXTRA_WIDTH_VALUE, prefs.getInt(KEY_WIDTH_ON, DEFAULT_WIDTH_ON))
+                        putExtra(EXTRA_HEIGHT_VALUE, progress)
+                    })
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        })
+
+        // 터치 OFF일 때 너비
+        val tvWidthOffLabel = findViewById<TextView>(R.id.tvWidthOffLabel)
+        val seekWidthOff = findViewById<SeekBar>(R.id.seekWidthOff)
+        val savedWidthOff = prefs.getInt(KEY_WIDTH_OFF, DEFAULT_WIDTH_OFF)
+        tvWidthOffLabel.text = "터치 OFF 너비: $savedWidthOff%"
+        seekWidthOff.progress = savedWidthOff
+        seekWidthOff.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                val clamped = progress.coerceAtLeast(25)
+                if (fromUser && progress < 25) { sb?.progress = 25; return }
+                tvWidthOffLabel.text = "터치 OFF 너비: $clamped%"
+                if (fromUser) {
+                    prefs.edit().putInt(KEY_WIDTH_OFF, clamped).apply()
+                    startService(Intent(this@MainActivity, OverlayService::class.java).apply {
+                        action = ACTION_SET_SIZE_OFF
+                        putExtra(EXTRA_WIDTH_VALUE, clamped)
+                        putExtra(EXTRA_HEIGHT_VALUE, prefs.getInt(KEY_HEIGHT_OFF, DEFAULT_HEIGHT_OFF))
+                    })
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        })
+
+        // 터치 OFF일 때 높이
+        val tvHeightOffLabel = findViewById<TextView>(R.id.tvHeightOffLabel)
+        val seekHeightOff = findViewById<SeekBar>(R.id.seekHeightOff)
+        val savedHeightOff = prefs.getInt(KEY_HEIGHT_OFF, DEFAULT_HEIGHT_OFF)
+        tvHeightOffLabel.text = "터치 OFF 높이: $savedHeightOff%"
+        seekHeightOff.progress = savedHeightOff
+        seekHeightOff.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                tvHeightOffLabel.text = "터치 OFF 높이: $progress%"
+                if (fromUser) {
+                    prefs.edit().putInt(KEY_HEIGHT_OFF, progress).apply()
+                    startService(Intent(this@MainActivity, OverlayService::class.java).apply {
+                        action = ACTION_SET_SIZE_OFF
+                        putExtra(EXTRA_WIDTH_VALUE, prefs.getInt(KEY_WIDTH_OFF, DEFAULT_WIDTH_OFF))
+                        putExtra(EXTRA_HEIGHT_VALUE, progress)
+                    })
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        })
+
+        // 설정값 초기화
+        findViewById<Button>(R.id.btnResetAllSettings).setOnClickListener {
+            prefs.edit()
+                .putInt(KEY_ALPHA_ON,   100)
+                .putInt(KEY_ALPHA_OFF,   60)
+                .putInt(KEY_WIDTH_ON,  DEFAULT_WIDTH_ON)
+                .putInt(KEY_WIDTH_OFF, DEFAULT_WIDTH_OFF)
+                .putInt(KEY_HEIGHT_ON,  DEFAULT_HEIGHT_ON)
+                .putInt(KEY_HEIGHT_OFF, DEFAULT_HEIGHT_OFF)
+                .apply()
+            // UI 갱신
+            tvAlphaOnLabel.text   = "터치 ON 투명도: 100%";  seekAlphaOn.progress   = 100
+            tvAlphaOffLabel.text  = "터치 OFF 투명도: 60%";  seekAlphaOff.progress  = 60
+            tvWidthOnLabel.text   = "터치 ON 너비: ${DEFAULT_WIDTH_ON}%";   seekWidthOn.progress   = DEFAULT_WIDTH_ON
+            tvHeightOnLabel.text  = "터치 ON 높이: ${DEFAULT_HEIGHT_ON}%";  seekHeightOn.progress  = DEFAULT_HEIGHT_ON
+            tvWidthOffLabel.text  = "터치 OFF 너비: ${DEFAULT_WIDTH_OFF}%"; seekWidthOff.progress  = DEFAULT_WIDTH_OFF
+            tvHeightOffLabel.text = "터치 OFF 높이: ${DEFAULT_HEIGHT_OFF}%";seekHeightOff.progress = DEFAULT_HEIGHT_OFF
+            // 실행 중인 오버레이에 반영
+            startService(Intent(this, OverlayService::class.java).apply { action = ACTION_RESET_SETTINGS })
+            Toast.makeText(this, "설정값이 초기화됐습니다.", Toast.LENGTH_SHORT).show()
+        }
 
         // 예시 팝업 보기
         findViewById<Button>(R.id.btnShowExample).setOnClickListener {
@@ -259,11 +373,24 @@ class MainActivity : AppCompatActivity() {
         const val KEY_AUTO_STOP         = "auto_stop_overlay"
         const val KEY_ALPHA_ON          = "web_alpha_on"
         const val KEY_ALPHA_OFF         = "web_alpha_off"
+        const val KEY_WIDTH_ON          = "web_width_on"
+        const val KEY_WIDTH_OFF         = "web_width_off"
+        const val KEY_HEIGHT_ON         = "web_height_on"
+        const val KEY_HEIGHT_OFF        = "web_height_off"
+        const val DEFAULT_WIDTH_ON      = 92
+        const val DEFAULT_WIDTH_OFF     = 92
+        const val DEFAULT_HEIGHT_ON     = 50
+        const val DEFAULT_HEIGHT_OFF    = 50
         const val ACTION_SAVE_POSITION  = "action_save_position"
         const val ACTION_RESET_POSITION = "action_reset_position"
         const val ACTION_SET_ALPHA_ON   = "action_set_alpha_on"
         const val ACTION_SET_ALPHA_OFF  = "action_set_alpha_off"
+        const val ACTION_SET_SIZE_ON    = "action_set_size_on"
+        const val ACTION_SET_SIZE_OFF   = "action_set_size_off"
+        const val ACTION_RESET_SETTINGS = "action_reset_settings"
         const val ACTION_SHOW_EXAMPLE   = "action_show_example"
         const val EXTRA_ALPHA_VALUE     = "extra_alpha_value"
+        const val EXTRA_WIDTH_VALUE     = "extra_width_value"
+        const val EXTRA_HEIGHT_VALUE    = "extra_height_value"
     }
 }

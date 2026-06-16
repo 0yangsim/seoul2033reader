@@ -36,16 +36,6 @@
                     android:textColor="#EEEEEE"
                     android:layout_marginBottom="8dp"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="게임 화면 위에 플로팅 버튼을 표시하고&#10;버튼을 탭하면 나무위키로 연결합니다."
-                    android:textSize="13sp"
-                    android:fontFamily="@font/kopub_batang"
-                    android:textColor="#666666"
-                    android:gravity="center"
-                    android:layout_marginBottom="40dp"/>
-
                 <!-- 상태 카드 -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -108,9 +98,9 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:fontFamily="@font/kopub_batang"
-                            android:text="게임 실행 시 오버레이를 자동으로 켭니다. (아래로 드래그하면 버튼을 끌 수 있습니다.)"
+                            android:text="게임 실행 시 오버레이를 자동으로 켭니다."
                             android:textColor="#555555"
-                            android:textSize="11sp"/>
+                            android:textSize="11sp" />
 
                     </LinearLayout>
 
@@ -435,6 +425,135 @@
                             android:max="100"/>
 
                     </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#1E1E1E"
+                        android:layout_marginBottom="28dp"/>
+
+                    <!-- 창 크기 섹션 -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="웹뷰 창 크기"
+                        android:textSize="10sp"
+                        android:fontFamily="@font/kopub_batang"
+                        android:textColor="#444444"
+                        android:letterSpacing="0.12"
+                        android:layout_marginBottom="10dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/status_card"
+                        android:paddingHorizontal="20dp"
+                        android:paddingVertical="16dp"
+                        android:layout_marginBottom="28dp">
+
+                        <!-- 터치 ON 너비 -->
+                        <TextView
+                            android:id="@+id/tvWidthOnLabel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="터치 ON 너비: 92%"
+                            android:fontFamily="@font/kopub_batang"
+                            android:textColor="#BBBBBB"
+                            android:textSize="13sp"
+                            android:layout_marginBottom="4dp"/>
+                        <SeekBar
+                            android:id="@+id/seekWidthOn"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="100"
+                            android:layout_marginBottom="12dp"/>
+
+                        <!-- 터치 ON 높이 -->
+                        <TextView
+                            android:id="@+id/tvHeightOnLabel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="터치 ON 높이: 50%"
+                            android:fontFamily="@font/kopub_batang"
+                            android:textColor="#BBBBBB"
+                            android:textSize="13sp"
+                            android:layout_marginBottom="4dp"/>
+                        <SeekBar
+                            android:id="@+id/seekHeightOn"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="100"
+                            android:layout_marginBottom="16dp"/>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#2A2A2A"
+                            android:layout_marginBottom="16dp"/>
+
+                        <!-- 터치 OFF 너비 -->
+                        <TextView
+                            android:id="@+id/tvWidthOffLabel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="터치 OFF 너비: 92%"
+                            android:fontFamily="@font/kopub_batang"
+                            android:textColor="#BBBBBB"
+                            android:textSize="13sp"
+                            android:layout_marginBottom="4dp"/>
+                        <SeekBar
+                            android:id="@+id/seekWidthOff"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="100"
+                            android:layout_marginBottom="12dp"/>
+
+                        <!-- 터치 OFF 높이 -->
+                        <TextView
+                            android:id="@+id/tvHeightOffLabel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="터치 OFF 높이: 50%"
+                            android:fontFamily="@font/kopub_batang"
+                            android:textColor="#BBBBBB"
+                            android:textSize="13sp"
+                            android:layout_marginBottom="4dp"/>
+                        <SeekBar
+                            android:id="@+id/seekHeightOff"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="100"/>
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#1E1E1E"
+                        android:layout_marginBottom="28dp"/>
+
+                    <!-- 설정값 초기화 -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="초기화"
+                        android:textSize="10sp"
+                        android:fontFamily="@font/kopub_batang"
+                        android:textColor="#444444"
+                        android:letterSpacing="0.12"
+                        android:layout_marginBottom="10dp"/>
+
+                    <Button
+                        android:id="@+id/btnResetAllSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:text="설정값 초기화"
+                        android:textColor="#FF6B6B"
+                        android:textSize="13sp"
+                        android:background="@drawable/btn_stop"
+                        android:stateListAnimator="@null"
+                        android:layout_marginBottom="16dp"/>
 
                     <View
                         android:layout_width="match_parent"

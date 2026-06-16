@@ -77,7 +77,7 @@ object WikiUrlResolver {
         "브레멘 음악대", "U.S.A. 사이언스", "탐욕의 보물찾기", "인간 동물원", "로그아웃", "엄마가 좋아, 아빠가 좋아?",
         "캐러밴", "황야의 크리스마스 파티", "작은 친구들을 위한 설빔", "진범의 고백 공격",
         "사랑은 움직이는거야", "아크로 리버사이드 마린", "뉴 서울 공화국", "목련호의 기적",
-        "수험생 키우기 프로젝트", "이북 리더", "호텔의 규칙", "은관우의 오관참육장",
+        "수험생 키우기 프로젝트", "이북 리더", "호텔의 규칙", "은관우의 오관참육장", "종말의 시네필",
         "도봉산의 등산객들", "생명의 다리", "텅 빈 소각장", "누더기 왕의 대관식", "쇼미더힙합",
         "하비와 꿩 사냥", "살인망치와 사람 사냥", "수유동 탐사",
         "아무거나 마시면 안 돼", "아무데서나 자면 안 돼", "둥이와 제이크", "실종 전단지",
@@ -133,6 +133,22 @@ object WikiUrlResolver {
         "사과와 능금나무", "주중 농장", "클로버 풀밭", "전생 체험 이야기",
         "서울 카페 부흥기", "우리 콩 연구소", "고로 나는 돌아간다",
         "메인 스토리 : 시뮬라크르"
+    )
+
+    // ── 태그 없는 확장팩 본문 직접 매핑 ──────────────────────────────────────
+    // 확장팩 태그가 화면에 표시되지 않아도 본문으로 확장팩+섹션을 특정할 수 있는 케이스.
+    // key   : normalize() 적용 후 비교할 고유 키구문
+    // value : Pair(확장팩명, 섹션앵커) — 앵커 빈 문자열이면 확장팩 최상단
+    private val TAGLESS_EXPANSION_MAP: List<Pair<String, Pair<String, String>>> = listOf(
+
+
+        // 언더 월드 — 소셜 네트워킹 사업
+        "마본좌에게소셜네트워킹사업을전수받은지도꽤나시간이흘렀습니다" to ("언더 월드" to "45층 (노량진역)"),
+        "파트너님제동업자들이에요소셜네트워크사업을전수했던여행자가" to ("언더 월드" to "45층 (노량진역)"),
+        "파트너님제동업자의동업자들이에요왜이렇게얼굴보기가힘들어요하하" to ("언더 월드" to "45층 (노량진역)"),
+
+        // 밀라노 칼리브로
+        "미쳤습니까의료진허락없이이런걸환자한테들이댈순없어요악마같은자식" to ("밀라노 칼리브로" to "밀라노와 심장 제세동기")
     )
 
     // ── 축약 별칭 맵 ───────────────────────────────────────────────────────────
@@ -278,6 +294,28 @@ object WikiUrlResolver {
         if (step0result != null) {
             Log.d(TAG, "STEP0 제목 직접 매칭 성공: ${step0result.title}")
             return step0result
+        }
+
+        // STEP 0-T. 태그 없는 확장팩 본문 직접 매핑
+        val beforePageNorm = normalize(beforePage)
+        val taglessMatch = TAGLESS_EXPANSION_MAP.firstOrNull { (key, _) ->
+            key.length >= 8 && beforePageNorm.contains(key)
+        }
+        if (taglessMatch != null) {
+            val (expansion, anchor) = taglessMatch.second
+            val url = if (anchor.isEmpty()) {
+                buildUrl("랜덤 인카운터/$expansion")
+            } else {
+                buildUrl("랜덤 인카운터/$expansion") + "#" +
+                        java.net.URLEncoder.encode(anchor, "UTF-8").replace("+", "%20")
+            }
+            Log.d(TAG, "STEP0-T 태그없는 확장팩 매칭: $expansion / $anchor")
+            return ResolvedEntry(
+                title = if (anchor.isEmpty()) expansion else "$expansion - $anchor",
+                pageNum = pageNum,
+                type = EntryType.EXPANSION_ENCOUNTER,
+                url = url
+            )
         }
 
         // beforePage가 비어있으면 제목 정보 없음 → 기본 인카운터

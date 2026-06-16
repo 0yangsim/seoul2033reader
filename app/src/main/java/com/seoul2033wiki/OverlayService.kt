@@ -75,6 +75,27 @@ class OverlayService : Service() {
             if (!isTouchable) applyAlpha(alphaOff)
             return START_NOT_STICKY
         }
+        if (intent?.action == MainActivity.ACTION_SET_SIZE_ON) {
+            widthOnPct  = intent.getIntExtra(MainActivity.EXTRA_WIDTH_VALUE,  MainActivity.DEFAULT_WIDTH_ON)
+            heightOnPct = intent.getIntExtra(MainActivity.EXTRA_HEIGHT_VALUE, MainActivity.DEFAULT_HEIGHT_ON)
+            if (isTouchable) applySize(widthOnPct, heightOnPct)
+            return START_NOT_STICKY
+        }
+        if (intent?.action == MainActivity.ACTION_SET_SIZE_OFF) {
+            widthOffPct  = intent.getIntExtra(MainActivity.EXTRA_WIDTH_VALUE,  MainActivity.DEFAULT_WIDTH_OFF)
+            heightOffPct = intent.getIntExtra(MainActivity.EXTRA_HEIGHT_VALUE, MainActivity.DEFAULT_HEIGHT_OFF)
+            if (!isTouchable) applySize(widthOffPct, heightOffPct)
+            return START_NOT_STICKY
+        }
+        if (intent?.action == MainActivity.ACTION_RESET_SETTINGS) {
+            alphaOn  = 1f;  alphaOff = 0.6f
+            widthOnPct   = MainActivity.DEFAULT_WIDTH_ON;  heightOnPct  = MainActivity.DEFAULT_HEIGHT_ON
+            widthOffPct  = MainActivity.DEFAULT_WIDTH_OFF; heightOffPct = MainActivity.DEFAULT_HEIGHT_OFF
+            applyAlpha(if (isTouchable) alphaOn else alphaOff)
+            applySize(if (isTouchable) widthOnPct else widthOffPct,
+                if (isTouchable) heightOnPct else heightOffPct)
+            return START_NOT_STICKY
+        }
         if (intent?.action == MainActivity.ACTION_SHOW_EXAMPLE) {
             showWebOverlay("https://namu.wiki/w/%EC%84%9C%EC%9A%B8%202033/%EB%9E%9C%EB%8D%A4%20%EC%9D%B8%EC%B9%B4%EC%9A%B4%ED%84%B0")
             return START_NOT_STICKY
@@ -571,6 +592,15 @@ class OverlayService : Service() {
     private var alphaOn  = 1f
     private var alphaOff = 0.6f
 
+    // 터치 ON/OFF 별 창 크기 (화면 대비 %, 설정에서 로드)
+    private var widthOnPct  = MainActivity.DEFAULT_WIDTH_ON
+    private var widthOffPct = MainActivity.DEFAULT_WIDTH_OFF
+    private var heightOnPct  = MainActivity.DEFAULT_HEIGHT_ON
+    private var heightOffPct = MainActivity.DEFAULT_HEIGHT_OFF
+
+    // 상단 바 실측 높이 (onGlobalLayout 후 갱신)
+    private var topBarH = 0
+
     // peek 탭 (오른쪽 가운데 고정)
     private var peekTabView: View? = null
 
@@ -651,8 +681,10 @@ class OverlayService : Service() {
         try { windowManager.updateViewLayout(webView, params) } catch (_: Exception) {}
         toggleBtn?.text = if (touchable) "터치 ON" else "터치 OFF"
         toggleBtn?.setTextColor(if (touchable) 0xFF4CAF50.toInt() else 0xFFAAAAAA.toInt())
-        // 터치 상태에 맞는 투명도 자동 적용
+        // 터치 상태에 맞는 투명도 + 크기 자동 적용
         applyAlpha(if (touchable) alphaOn else alphaOff)
+        applySize(if (touchable) widthOnPct else widthOffPct,
+            if (touchable) heightOnPct else heightOffPct)
     }
 
     // ── 투명도 적용 ──────────────────────────────────────────────────────────
@@ -660,8 +692,36 @@ class OverlayService : Service() {
         webOverlayView?.alpha = alpha
     }
 
+    // ── 창 크기 적용 ─────────────────────────────────────────────────────────
+    private fun applySize(widthPct: Int, heightPct: Int) {
+        val webView = webOverlayView ?: return
+        val params  = webOverlayParams ?: return
+        val metrics = resources.displayMetrics
+        val screenW = metrics.widthPixels
+        val screenH = metrics.heightPixels
+
+        // 최소 너비: 터치 ON → 50%, 터치 OFF → 25%
+        val minWidthPct = if (isTouchable) 50 else 25
+        val clampedW = widthPct.coerceAtLeast(minWidthPct)
+
+        val newW = (screenW * clampedW  / 100.0).toInt()
+        val newH = (screenH * heightPct / 100.0).toInt()
+
+        params.width  = newW
+        params.height = newH
+        try { windowManager.updateViewLayout(webView, params) } catch (_: Exception) {}
+
+        // 상단 바 너비 동기화
+        val topBar       = webTopBarView   ?: return
+        val topBarParams = webTopBarParams ?: return
+        topBarParams.width = newW
+        // 높이 변경 시 상단 바가 웹뷰 바로 위에 붙도록 y 재계산
+        topBarParams.y = params.y - (newH + topBarH) / 2
+        try { windowManager.updateViewLayout(topBar, topBarParams) } catch (_: Exception) {}
+    }
+
     // ── peek 진입 ────────────────────────────────────────────────────────────
-    private fun peekWebOverlay(popupW: Int, popupH: Int, topBarH: Int, toggleBtn: TextView) {
+    private fun peekWebOverlay(popupW: Int, popupH: Int, toggleBtn: TextView) {
         val webView = webOverlayView ?: return
         val topBar = webTopBarView ?: return
         val webParams = webOverlayParams ?: return
@@ -675,11 +735,11 @@ class OverlayService : Service() {
         try { windowManager.removeView(topBar) } catch (_: Exception) {}
 
         // 오른쪽 가운데 peek 탭 표시
-        showPeekTab(popupW, popupH, topBarH)
+        showPeekTab(popupW, popupH)
     }
 
     @android.annotation.SuppressLint("ClickableViewAccessibility")
-    private fun showPeekTab(popupW: Int, popupH: Int, topBarH: Int) {
+    private fun showPeekTab(popupW: Int, popupH: Int) {
         if (peekTabView != null) return
         val density = resources.displayMetrics.density
         val tabW = (44 * density).toInt()
@@ -713,7 +773,7 @@ class OverlayService : Service() {
         tab.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) {
                 hidePeekTab()
-                expandWebOverlay(popupW, popupH, topBarH)
+                expandWebOverlay(popupW, popupH)
             }
             true
         }
@@ -728,7 +788,7 @@ class OverlayService : Service() {
     }
 
     // ── peek 복원 ────────────────────────────────────────────────────────────
-    private fun expandWebOverlay(popupW: Int, popupH: Int, topBarH: Int) {
+    private fun expandWebOverlay(popupW: Int, popupH: Int) {
         val webView = webOverlayView ?: return
         val topBar = webTopBarView ?: return
         val webParams = webOverlayParams ?: return
@@ -736,19 +796,27 @@ class OverlayService : Service() {
 
         webOverlayIsPeeked = false
 
+        // 현재 설정값으로 실제 크기 재계산 (peek 이후 설정이 바뀌었을 수 있으므로)
+        val metricsEx = resources.displayMetrics
+        val minWPct = if (isTouchable) 50 else 25
+        val wPct = (if (isTouchable) widthOnPct else widthOffPct).coerceAtLeast(minWPct)
+        val hPct = if (isTouchable) heightOnPct else heightOffPct
+        val actualW = (metricsEx.widthPixels  * wPct / 100.0).toInt()
+        val actualH = (metricsEx.heightPixels * hPct / 100.0).toInt()
+
         // 웹뷰 + 상단 바 다시 추가
-        webParams.width = popupW
-        webParams.height = popupH
+        webParams.width = actualW
+        webParams.height = actualH
         webParams.x = webOverlayFullX
         webParams.y = webOverlayFullY
         try { windowManager.addView(webView, webParams) } catch (_: Exception) {
             try { windowManager.updateViewLayout(webView, webParams) } catch (_: Exception) {}
         }
 
-        // 상단 바 복원
-        topParams.width = popupW
+        // 상단 바 복원 (너비 + y 동기화)
+        topParams.width = actualW
         topParams.x = webOverlayFullX
-        topParams.y = webOverlayFullY - (popupH + topBarH) / 2
+        topParams.y = webOverlayFullY - (actualH + topBarH) / 2
         try { windowManager.addView(topBar, topParams) } catch (_: Exception) {
             try { windowManager.updateViewLayout(topBar, topParams) } catch (_: Exception) {}
         }
@@ -765,7 +833,7 @@ class OverlayService : Service() {
 
         val popupW = (screenWidth * 0.92).toInt()
         val popupH = (screenHeight * 0.5).toInt()
-        var topBarH = (44 * density).toInt()    // 상단 바 높이 (실측 후 갱신됨)
+        topBarH = (44 * density).toInt()    // 상단 바 높이 초기값 (실측 후 갱신됨)
 
         var currentX = 0
         var currentY = 0
@@ -822,11 +890,20 @@ class OverlayService : Service() {
         webOverlayParams = webParams
         isTouchable = true
 
-        // 설정에서 투명도 로드 및 초기 적용 (터치 ON 상태이므로 alphaOn 적용)
+        // 설정에서 투명도 + 창 크기 로드 및 초기 적용 (터치 ON 상태이므로 ON 값 적용)
         val prefs = getSharedPreferences("settings", MODE_PRIVATE)
         alphaOn  = prefs.getInt(MainActivity.KEY_ALPHA_ON,  100) / 100f
         alphaOff = prefs.getInt(MainActivity.KEY_ALPHA_OFF,  60) / 100f
+        widthOnPct   = prefs.getInt(MainActivity.KEY_WIDTH_ON,   MainActivity.DEFAULT_WIDTH_ON)
+        widthOffPct  = prefs.getInt(MainActivity.KEY_WIDTH_OFF,  MainActivity.DEFAULT_WIDTH_OFF)
+        heightOnPct  = prefs.getInt(MainActivity.KEY_HEIGHT_ON,  MainActivity.DEFAULT_HEIGHT_ON)
+        heightOffPct = prefs.getInt(MainActivity.KEY_HEIGHT_OFF, MainActivity.DEFAULT_HEIGHT_OFF)
         webView.alpha = alphaOn
+        // 상단 바 생성 후 applySize를 호출해야 너비가 함께 적용되므로 여기서는 webParams만 미리 세팅
+        val minWPct0 = 50
+        val clampedW0 = widthOnPct.coerceAtLeast(minWPct0)
+        webParams.width  = (screenWidth  * clampedW0   / 100.0).toInt()
+        webParams.height = (screenHeight * heightOnPct / 100.0).toInt()
 
         // ── 2. 상단 바 ────────────────────────────────────────────────────────
         // 구조:
@@ -933,7 +1010,7 @@ class OverlayService : Service() {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     if (webOverlayIsPeeked) {
-                        expandWebOverlay(popupW, popupH, topBarH)
+                        expandWebOverlay(popupW, popupH)
                         return@setOnTouchListener true
                     }
                     dragInitX = webParams.x; dragInitY = webParams.y
@@ -950,7 +1027,9 @@ class OverlayService : Service() {
                         showPeekDropZone()
                     }
                     if (isTopBarDragging) {
-                        val halfW = popupW / 2; val halfH = popupH / 2
+                        val curW = webParams.width
+                        val curH = webParams.height
+                        val halfW = curW / 2; val halfH = curH / 2
                         val newX = (dragInitX + dx.toInt()).coerceIn(
                             -(screenWidth / 2 + halfW - topBarH),
                             screenWidth / 2 + halfW - topBarH
@@ -963,7 +1042,7 @@ class OverlayService : Service() {
 
                         webParams.x = newX; webParams.y = newY
                         try { windowManager.updateViewLayout(webView, webParams) } catch (_: Exception) {}
-                        topParams.x = newX; topParams.y = newY - (popupH + topBarH) / 2
+                        topParams.x = newX; topParams.y = newY - (curH + topBarH) / 2
                         try { windowManager.updateViewLayout(topBarRoot, topParams) } catch (_: Exception) {}
 
                         val inPeek = isInPeekDropZone(event.rawX, event.rawY)
@@ -979,7 +1058,7 @@ class OverlayService : Service() {
                         isTopBarDragging = false
                         val inPeek = isInPeekDropZone(event.rawX, event.rawY)
                         hidePeekDropZone()
-                        if (inPeek) peekWebOverlay(popupW, popupH, topBarH, toggleBtn)
+                        if (inPeek) peekWebOverlay(popupW, popupH, toggleBtn)
                     }
                     true
                 }
@@ -997,6 +1076,8 @@ class OverlayService : Service() {
         }
         try {
             windowManager.addView(topBarRoot, topParams)
+            // 상단 바 + 웹뷰 모두 추가된 시점에 applySize로 너비 동기화
+            applySize(widthOnPct, heightOnPct)
             // 실제 렌더 높이로 y 좌표 재조정 (WRAP_CONTENT이므로 측정 후 보정)
             topBarRoot.viewTreeObserver.addOnGlobalLayoutListener(object :
                 android.view.ViewTreeObserver.OnGlobalLayoutListener {
@@ -1005,7 +1086,7 @@ class OverlayService : Service() {
                     val actualTopH = topBarRoot.height
                     if (actualTopH > 0) {
                         topBarH = actualTopH
-                        topParams.y = currentY - (popupH + actualTopH) / 2
+                        topParams.y = currentY - (webParams.height + actualTopH) / 2
                         webParams.y = currentY
                         try {
                             windowManager.updateViewLayout(topBarRoot, topParams)
