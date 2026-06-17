@@ -97,7 +97,10 @@ class OverlayService : Service() {
             return START_NOT_STICKY
         }
         if (intent?.action == MainActivity.ACTION_SHOW_EXAMPLE) {
-            showWebOverlay("https://namu.wiki/w/%EC%84%9C%EC%9A%B8%202033/%EB%9E%9C%EB%8D%A4%20%EC%9D%B8%EC%B9%B4%EC%9A%B4%ED%84%B0")
+            showWebOverlay(ResolvedEntry(
+                title = "랜덤 인카운터", pageNum = "", type = EntryType.BASIC,
+                url = "https://namu.wiki/w/%EC%84%9C%EC%9A%B8%202033/%EB%9E%9C%EB%8D%A4%20%EC%9D%B8%EC%B9%B4%EC%9A%B4%ED%84%B0"
+            ))
             return START_NOT_STICKY
         }
         if (overlayView != null) {
@@ -397,17 +400,34 @@ class OverlayService : Service() {
                     bottomEntry
                 }
                 bottomEntry != null && bottomEntry.type == EntryType.EXPANSION -> {
-                    Log.d("Seoul2033Wiki", "확장팩 인식: '${bottomEntry.title}' → 섹션 탐지")
-                    ExpansionEncounterResolver.resolve(rawText, bottomEntry.title)
-                        ?: run {
-                            Log.d("Seoul2033Wiki", "확장팩 섹션 매칭 실패 → 인덱스 페이지로 폴백: '${bottomEntry.title}'")
-                            ResolvedEntry(
-                                title = bottomEntry.title,
-                                pageNum = "",
-                                type = EntryType.EXPANSION,
-                                url = ExpansionEncounterResolver.buildIndexUrl(bottomEntry.title)
+                    if (bottomEntry.url.contains('#')) {
+                        // Case B expansionAnchor 있음 → URL 이미 결정됨, ExpansionEncounterResolver 스킵
+                        // 제목을 "확장팩 - 섹션앵커" 형태로 구성
+                        val anchor = bottomEntry.url
+                            .substringAfterLast('#')
+                            .let { java.net.URLDecoder.decode(it, "UTF-8") }
+                        Log.d("Seoul2033Wiki", "확장팩 앵커 포함 URL 확정: '${bottomEntry.title}' → $anchor")
+                        bottomEntry.copy(title = "${bottomEntry.title} - $anchor")
+                    } else {
+                        Log.d("Seoul2033Wiki", "확장팩 인식: '${bottomEntry.title}' → 섹션 탐지")
+                        val expansionEntry = ExpansionEncounterResolver.resolve(rawText, bottomEntry.title)
+                            ?: run {
+                                Log.d("Seoul2033Wiki", "확장팩 섹션 매칭 실패 → 폴백: '${bottomEntry.title}'")
+                                ResolvedEntry(
+                                    title = bottomEntry.title,
+                                    pageNum = "",
+                                    type = EntryType.EXPANSION,
+                                    url = bottomEntry.url
+                                )
+                            }
+                        // Case B crossLink 보존
+                        if (bottomEntry.crossLinkUrl != null) {
+                            expansionEntry.copy(
+                                crossLinkUrl = bottomEntry.crossLinkUrl,
+                                crossLinkLabel = bottomEntry.crossLinkLabel
                             )
-                        }
+                        } else expansionEntry
+                    }
                 }
                 else -> {
                     Log.d("Seoul2033Wiki", "풀체인 resolver 실행 (확장팩 제외)")
@@ -472,32 +492,114 @@ class OverlayService : Service() {
                 typeface = AppFont.regular(ctx)
             }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
 
-            root.addView(headerRow, LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = (4 * density).toInt() })
+            // 크로스링크 토글 상태 — if 블록 밖에서도 btnRow가 참조
+            var popupCrossLinked = false
 
-            root.addView(TextView(ctx).apply {
-                text = entry.title
-                textSize = 18f
-                setTextColor(0xFFEEEEEE.toInt())
-                typeface = AppFont.bold(ctx)
-            }, LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = (4 * density).toInt() })
+            // 크로스링크 버튼 (crossLinkUrl 있을 때만)
+            if (entry.crossLinkUrl != null && entry.crossLinkLabel != null) {
+                var isCrossLinked = false
+                val tvType  = headerRow.getChildAt(0) as TextView
+                // 제목/URL TextView는 아직 생성 전이므로 나중에 참조할 수 있게 미리 선언
+                var tvTitle: TextView? = null
+                var tvUrl:   TextView? = null
 
-            root.addView(TextView(ctx).apply {
-                text = entry.url
-                textSize = 11f
-                setTextColor(0xFF888888.toInt())
-                typeface = AppFont.regular(ctx)
-                maxLines = 2
-                ellipsize = TextUtils.TruncateAt.END
-            }, LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = (16 * density).toInt() })
+                val crossBtn = TextView(ctx).apply {
+                    text = "( ${entry.crossLinkLabel} )"
+                    textSize = 11f
+                    setTextColor(0xFFFFFFFF.toInt())
+                    gravity = Gravity.CENTER
+                    val hp = (10 * density).toInt()
+                    val vp = (4 * density).toInt()
+                    setPadding(hp, vp, hp, vp)
+                    background = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        setColor(0xFF2A2A2A.toInt())
+                        cornerRadius = 10 * density
+                        setStroke((1 * density).toInt(), 0xFF555555.toInt())
+                    }
+                    setOnClickListener {
+                        isCrossLinked = !isCrossLinked
+                        popupCrossLinked = isCrossLinked
+                        if (isCrossLinked) {
+                            setTextColor(0xFF4CAF50.toInt())
+                            (background as? GradientDrawable)?.setStroke((1 * density).toInt(), 0xFF4CAF50.toInt())
+                            tvType.text = getString(R.string.label_type, EntryType.MAIN_STORY.label)
+                            tvTitle?.text = entry.crossLinkLabel
+                            tvUrl?.text   = entry.crossLinkUrl
+                        } else {
+                            setTextColor(0xFFFFFFFF.toInt())
+                            (background as? GradientDrawable)?.setStroke((1 * density).toInt(), 0xFF555555.toInt())
+                            tvType.text = getString(R.string.label_type, entry.type.label)
+                            tvTitle?.text = entry.title
+                            tvUrl?.text   = entry.url
+                        }
+                    }
+                }
+                headerRow.addView(crossBtn, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { leftMargin = (8 * density).toInt() })
+
+                root.addView(headerRow, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = (4 * density).toInt() })
+
+                val titleView = TextView(ctx).apply {
+                    text = entry.title
+                    textSize = 18f
+                    setTextColor(0xFFEEEEEE.toInt())
+                    typeface = AppFont.bold(ctx)
+                }
+                tvTitle = titleView
+                root.addView(titleView, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = (4 * density).toInt() })
+
+                val urlView = TextView(ctx).apply {
+                    text = entry.url
+                    textSize = 11f
+                    setTextColor(0xFF888888.toInt())
+                    typeface = AppFont.regular(ctx)
+                    maxLines = 2
+                    ellipsize = TextUtils.TruncateAt.END
+                }
+                tvUrl = urlView
+                root.addView(urlView, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = (16 * density).toInt() })
+
+            } else {
+                // 크로스링크 없는 일반 케이스
+                root.addView(headerRow, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = (4 * density).toInt() })
+
+                root.addView(TextView(ctx).apply {
+                    text = entry.title
+                    textSize = 18f
+                    setTextColor(0xFFEEEEEE.toInt())
+                    typeface = AppFont.bold(ctx)
+                }, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = (4 * density).toInt() })
+
+                root.addView(TextView(ctx).apply {
+                    text = entry.url
+                    textSize = 11f
+                    setTextColor(0xFF888888.toInt())
+                    typeface = AppFont.regular(ctx)
+                    maxLines = 2
+                    ellipsize = TextUtils.TruncateAt.END
+                }, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = (16 * density).toInt() })
+            }
 
             val btnRow = LinearLayout(ctx).apply { orientation = LinearLayout.HORIZONTAL }
 
@@ -511,8 +613,9 @@ class OverlayService : Service() {
                     cornerRadius = 24 * density
                 }
                 setOnClickListener {
+                    val url = if (popupCrossLinked) entry.crossLinkUrl ?: entry.url else entry.url
                     dismissPopup()
-                    startActivity(Intent(Intent.ACTION_VIEW, entry.url.toUri()).apply {
+                    startActivity(Intent(Intent.ACTION_VIEW, url.toUri()).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     })
                 }
@@ -531,8 +634,9 @@ class OverlayService : Service() {
                     setStroke((1 * density).toInt(), 0xFF555555.toInt())
                 }
                 setOnClickListener {
+                    val url = if (popupCrossLinked) entry.crossLinkUrl ?: entry.url else entry.url
                     dismissPopup()
-                    showWebOverlay(entry.url)
+                    showWebOverlay(entry.copy(url = url))
                 }
             }, LinearLayout.LayoutParams(0, (48 * density).toInt(), 1f))
 
@@ -823,8 +927,9 @@ class OverlayService : Service() {
     }
 
     @android.annotation.SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
-    private fun showWebOverlay(url: String) {
+    private fun showWebOverlay(entry: ResolvedEntry) {
         dismissWebOverlay()
+        val url = entry.url
         val ctx = this
         val metrics = resources.displayMetrics
         val density = metrics.density

@@ -57,11 +57,11 @@ object WikiUrlResolver {
         "발명의 날", "분노의 도로", "블랙 아웃", "사건 25시",
         "사실상 공무원의 이론", "서울 2015 : 예삐전", "서울림픽", "서울 무림맹",
         "서울의 밤", "세상에 나쁜 쥐는 없다", "신인 작가 단편선", "신인 작가 단편선 2",
-        "아기 황소너구리", "언더 월드", "엽총과 송곳니", "옛날 옛적에",
+        "아기 황소너구리", "알바천국", "언더 월드", "엽총과 송곳니", "옛날 옛적에",
         "온 에어 서울", "요리왕", "원 피스 쉽", "잠실 칼리파",
-        "장미의 이름으로", "재건", "죄와 벌", "준비된 모험가",
+        "장미의 이름으로", "재건", "죄와 벌", "죽음을 배웁니다", "준비된 모험가",
         "준비된 전문가", "천공의 묵시록", "카지노 로얄", "프린세슘 메이커",
-        "한강 러닝", "핵겨울왕국", "황소너구리 왕국", "죽음을 배웁니다"
+        "한강 러닝", "핵겨울왕국", "황소너구리 왕국"
     )
 
     // 사용자 등록 확장팩은 런타임에 CustomItemManager.getExpansions(ctx)로 조회
@@ -133,22 +133,6 @@ object WikiUrlResolver {
         "사과와 능금나무", "주중 농장", "클로버 풀밭", "전생 체험 이야기",
         "서울 카페 부흥기", "우리 콩 연구소", "고로 나는 돌아간다",
         "메인 스토리 : 시뮬라크르"
-    )
-
-    // ── 태그 없는 확장팩 본문 직접 매핑 ──────────────────────────────────────
-    // 확장팩 태그가 화면에 표시되지 않아도 본문으로 확장팩+섹션을 특정할 수 있는 케이스.
-    // key   : normalize() 적용 후 비교할 고유 키구문
-    // value : Pair(확장팩명, 섹션앵커) — 앵커 빈 문자열이면 확장팩 최상단
-    private val TAGLESS_EXPANSION_MAP: List<Pair<String, Pair<String, String>>> = listOf(
-
-
-        // 언더 월드 — 소셜 네트워킹 사업
-        "마본좌에게소셜네트워킹사업을전수받은지도꽤나시간이흘렀습니다" to ("언더 월드" to "45층 (노량진역)"),
-        "파트너님제동업자들이에요소셜네트워크사업을전수했던여행자가" to ("언더 월드" to "45층 (노량진역)"),
-        "파트너님제동업자의동업자들이에요왜이렇게얼굴보기가힘들어요하하" to ("언더 월드" to "45층 (노량진역)"),
-
-        // 밀라노 칼리브로
-        "미쳤습니까의료진허락없이이런걸환자한테들이댈순없어요악마같은자식" to ("밀라노 칼리브로" to "밀라노와 심장 제세동기")
     )
 
     // ── 축약 별칭 맵 ───────────────────────────────────────────────────────────
@@ -290,32 +274,30 @@ object WikiUrlResolver {
         //
         // 이 단계에서 매칭되면 페이지번호는 이미 추출된 값을 전달.
         // ────────────────────────────────────────────────────────────────────
+        val beforePageNorm = normalize(beforePage)
+
         val step0result = resolveByTitleScan(beforePage, pageNum)
         if (step0result != null) {
             Log.d(TAG, "STEP0 제목 직접 매칭 성공: ${step0result.title}")
-            return step0result
+            val crossB = CrossLinkResolver.resolveCaseB(beforePageNorm, step0result.title)
+            if (crossB != null) {
+                val (expansionUrl, mainStoryUrl, label) = crossB
+                // expansionAnchor 있음 → URL 교체 + 크로스링크, 없음 → step0result 그대로 + 크로스링크
+                return step0result.copy(
+                    url = expansionUrl ?: step0result.url,
+                    crossLinkUrl = mainStoryUrl,
+                    crossLinkLabel = label
+                )
+            } else {
+                return step0result
+            }
         }
 
-        // STEP 0-T. 태그 없는 확장팩 본문 직접 매핑
-        val beforePageNorm = normalize(beforePage)
-        val taglessMatch = TAGLESS_EXPANSION_MAP.firstOrNull { (key, _) ->
-            key.length >= 8 && beforePageNorm.contains(key)
-        }
-        if (taglessMatch != null) {
-            val (expansion, anchor) = taglessMatch.second
-            val url = if (anchor.isEmpty()) {
-                buildUrl("랜덤 인카운터/$expansion")
-            } else {
-                buildUrl("랜덤 인카운터/$expansion") + "#" +
-                        java.net.URLEncoder.encode(anchor, "UTF-8").replace("+", "%20")
-            }
-            Log.d(TAG, "STEP0-T 태그없는 확장팩 매칭: $expansion / $anchor")
-            return ResolvedEntry(
-                title = if (anchor.isEmpty()) expansion else "$expansion - $anchor",
-                pageNum = pageNum,
-                type = EntryType.EXPANSION_ENCOUNTER,
-                url = url
-            )
+        // STEP 0-T. Case A — 확장팩 태그 없이 본문만으로 매칭
+        val crossA = CrossLinkResolver.resolveCaseA(beforePageNorm, pageNum)
+        if (crossA != null) {
+            Log.d(TAG, "STEP0-T CaseA 매칭: ${crossA.title}")
+            return crossA
         }
 
         // beforePage가 비어있으면 제목 정보 없음 → 기본 인카운터
@@ -389,7 +371,6 @@ object WikiUrlResolver {
 
         return if (!hasStoryTag) {
             // ── [Case 1] 확장팩 ──────────────────────────────────────────
-            // 하드코딩 목록 우선 탐색
             val hardTitle = exactMatchPrecise(ocrTitle, EXPANSION_LIST)
                 ?: fuzzyFind(ocrTitle, EXPANSION_LIST)
 
@@ -831,5 +812,7 @@ enum class EntryType(val label: String) {
 }
 
 data class ResolvedEntry(
-    val title: String, val pageNum: String, val type: EntryType, val url: String
+    val title: String, val pageNum: String, val type: EntryType, val url: String,
+    val crossLinkUrl: String? = null,   // 연결할 반대쪽 URL (주요스토리↔확장팩)
+    val crossLinkLabel: String? = null  // 크로스링크 버튼에 표시할 이름 (예: "짐승소년")
 )
