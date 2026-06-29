@@ -168,28 +168,49 @@ object HardModeEncounterResolver {
         "이번이마지막기회일것같네요" to "마지막 기회"
     )
 
-    private fun normalize(s: String) =
-        s.replace(
-            Regex("""[^\p{L}\p{N}]"""),
-            ""
-        ).lowercase()
+    private val NORMALIZE_REGEX = Regex("""[^\p{L}\p{N}]""")
 
+    private fun normalize(s: String) = s.replace(NORMALIZE_REGEX, "").lowercase()
+
+    // prefix 버킷 인덱스 — 전체 키 순회 대신 후보만 추출
+    private const val PREFIX_LEN = 5
+
+    private val prefixIndex: Map<String, List<Pair<String, String>>> by lazy {
+        val map = HashMap<String, MutableList<Pair<String, String>>>()
+        for ((key, anchor) in ENCOUNTER_MAP) {
+            if (key.length >= PREFIX_LEN) {
+                map.getOrPut(key.substring(0, PREFIX_LEN)) { mutableListOf() }.add(key to anchor)
+            }
+        }
+        map
+    }
 
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
+        if (cleanInput.length < 8) {
+            Log.d(TAG, "하드 모드 인카운터 매칭 실패")
+            return null
+        }
 
+        val seen = HashMap<String, Int>()
         var bestKey = ""
         var bestAnchor = ""
         var bestPos = -1
 
-        for ((key, anchor) in ENCOUNTER_MAP) {
-            if (key.length < 8) continue
-            val pos = cleanInput.lastIndexOf(key)
-            if (pos < 0) continue
-            if (pos >= bestPos) {
-                bestKey = key
-                bestAnchor = anchor
-                bestPos = pos
+        for (start in 0..cleanInput.length - PREFIX_LEN) {
+            val bucket = prefixIndex[cleanInput.substring(start, start + PREFIX_LEN)] ?: continue
+            for ((key, anchor) in bucket) {
+                if (key.length < 8) continue
+                val pos = cleanInput.lastIndexOf(key)
+                if (pos < 0) continue
+                val prevPos = seen[key] ?: -1
+                if (pos <= prevPos) continue
+                seen[key] = pos
+                if (pos >= bestPos) {
+                    bestKey = key
+                    bestAnchor = anchor
+                    bestPos = pos
+                }
             }
         }
 

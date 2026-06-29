@@ -46,6 +46,13 @@ object WikiUrlResolver {
 
     private const val BASE = "https://namu.wiki"
     private const val TAG = "WikiUrlResolver"
+    private val NORMALIZE_REGEX = Regex("""[^\p{L}\p{N}]""")
+
+    // normalize 결과 캐시 — 동일 문자열 반복 변환 방지
+    private val normalizeCache = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    private fun normalize(s: String): String =
+        normalizeCache.getOrPut(s) { s.replace(NORMALIZE_REGEX, "").lowercase() }
 
     // ── 하드코딩 목록 ─────────────────────────────────────────────────────────
 
@@ -193,6 +200,31 @@ object WikiUrlResolver {
         "지뢰나라" to "지뢰나라 왕자님"
     )
 
+    // 별칭 키 normalize 사전 계산 (resolveAlias 반복 순회 축소)
+    private val normalizedAliasExact: Map<String, String> =
+        TITLE_ALIAS_MAP.entries.associate { normalize(it.key) to it.value }
+
+    private val normalizedAliasPrefix: List<Pair<String, String>> =
+        TITLE_ALIAS_MAP.entries
+            .map { normalize(it.key) to it.value }
+            .filter { (key, _) -> key.length >= 4 }
+            .sortedByDescending { (key, _) -> key.length }
+
+    // 목록별 normalize 사전 계산 (contains 매칭 시 반복 normalize 제거)
+    private data class NormEntry(val title: String, val normalized: String, val length: Int)
+
+    private val normalizedExpansions: List<NormEntry> =
+        EXPANSION_LIST.map {
+            val n = normalize(it)
+            NormEntry(it, n, n.length)
+        }
+
+    private val normalizedStories: List<NormEntry> =
+        (STORY_LIST + LEVEL_LIST + SEASON_LIST).map {
+            val n = normalize(it)
+            NormEntry(it, n, n.length)
+        }
+
     // ── 나무위키 폴백용 동적 목록 ───────────────────────────────────────────
     private var dynamicLevelStories: Set<String> = emptySet()
     private var dynamicSeasonStories: Set<String> = emptySet()
@@ -251,7 +283,7 @@ object WikiUrlResolver {
 
         if (pageLineIdx >= 0) {
             val lineMatch = pageLinePattern.find(textLines[pageLineIdx])!!
-            pageNum = lineMatch.groupValues[1].replace("]", "1")
+            pageNum = lineMatch.groupValues[1]
             beforePage = textLines.take(pageLineIdx).joinToString("\n").trim()
         } else {
             // 2순위: 앞뒤 공백으로 둘러싸인 패턴 (줄바꿈 포함)
@@ -261,7 +293,7 @@ object WikiUrlResolver {
                 Log.d(TAG, "페이지 번호 없음 → null 반환 (팝업 미표시)")
                 return null
             }
-            pageNum = pageMatch.groupValues[1].replace("]", "1")
+            pageNum = pageMatch.groupValues[1]
             beforePage = cleaned.substring(0, pageMatch.range.first).trim()
         }
         Log.d(TAG, "페이지번호=$pageNum / 앞텍스트=[$beforePage]")
@@ -400,21 +432,15 @@ object WikiUrlResolver {
      */
     private fun resolveAlias(raw: String): String? {
         val cleanInput = normalize(raw)
-        // 정확 일치
-        TITLE_ALIAS_MAP.entries.firstOrNull { normalize(it.key) == cleanInput }
-            ?.let { return it.value }
-        // 접두 일치: 맵의 키가 입력을 접두로 포함하거나, 입력이 키의 접두인 경우
-        // (단, 최소 4글자 이상이어야 오인식 방지)
-        return TITLE_ALIAS_MAP.entries
+        normalizedAliasExact[cleanInput]?.let { return it }
+        return normalizedAliasPrefix
+            .asSequence()
             .filter { (key, _) ->
-                val cleanKey = normalize(key)
-                cleanKey.length >= 4 && (
-                        cleanInput.startsWith(cleanKey) ||
-                                cleanKey.startsWith(cleanInput) && cleanInput.length >= 4
-                        )
+                cleanInput.startsWith(key) ||
+                        (key.startsWith(cleanInput) && cleanInput.length >= 4)
             }
-            .minByOrNull { kotlin.math.abs(normalize(it.key).length - cleanInput.length) }
-            ?.value
+            .minByOrNull { (key, _) -> kotlin.math.abs(key.length - cleanInput.length) }
+            ?.second
     }
 
     // ── STEP0: 전체 텍스트에서 제목 직접 스캔 (페이지번호 없어도 동작) ─────
@@ -465,10 +491,11 @@ object WikiUrlResolver {
             val resolved = resolveAlias(rawTitle) ?: rawTitle
 
             // 주요 스토리 인터셉트: 코마 등은 이야기 URL 대신 주요 스토리로
-            val mainStoryHit = MAIN_STORY_REDIRECT_TITLES.firstOrNull { title ->
-                normalize(resolved).contains(normalize(title)) ||
-                        normalize(rawTitle).contains(normalize(title))
-            }
+            val resolvedNorm = normalize(resolved)
+            val rawTitleNorm = normalize(rawTitle)
+            val mainStoryHit = normalizedMainStoryRedirects.firstOrNull { entry ->
+                resolvedNorm.contains(entry.normalized) || rawTitleNorm.contains(entry.normalized)
+            }?.title
             if (mainStoryHit != null) {
                 Log.d(TAG, "STEP0 주요 스토리 인터셉트: '$mainStoryHit'")
                 return ResolvedEntry(
@@ -498,12 +525,11 @@ object WikiUrlResolver {
         val tailNorm = normalize(allNonEmptyLines.takeLast(1).joinToString("\n"))
 
         // 2-a) 뒤쪽 1줄에서만 탐색 (전체 탐색 폴백 제거 — 가구/아이템 이름 오인식 방지)
-        val hardExpansionHit = EXPANSION_LIST
-            .filter { candidate ->
-                val cn = normalize(candidate)
-                cn.length >= 2 && tailNorm.contains(cn)
-            }
-            .maxByOrNull { normalize(it).length }
+        val hardExpansionHit = normalizedExpansions
+            .asSequence()
+            .filter { it.length >= 2 && tailNorm.contains(it.normalized) }
+            .maxByOrNull { it.length }
+            ?.title
 
         if (hardExpansionHit != null) {
             Log.d(TAG, "STEP0-2 확장팩 매칭[뒤쪽1줄]: '$hardExpansionHit'")
@@ -515,20 +541,17 @@ object WikiUrlResolver {
         }
 
         // 3) 이야기/레벨/시즌 이름 포함 매칭 (이야기 태그 없이도)
-        val allStories = STORY_LIST + LEVEL_LIST + SEASON_LIST
-        // 확장팩과 동일하게 뒤쪽 1줄에서만 탐색 (가구/아이템 이름 오인식 방지)
-        val storyHit = allStories
-            .filter { candidate ->
-                val cn = normalize(candidate)
-                cn.length >= 4 && tailNorm.contains(cn)
-            }
-            .maxByOrNull { normalize(it).length }
+        val storyHit = normalizedStories
+            .asSequence()
+            .filter { it.length >= 4 && tailNorm.contains(it.normalized) }
+            .maxByOrNull { it.length }
+            ?.title
         if (storyHit != null) {
             // 주요 스토리 인터셉트: 시즌/레벨/이야기로 분류된 제목이어도 주요 스토리면 우선 처리
-            val mainStoryHit3 = MAIN_STORY_REDIRECT_TITLES.firstOrNull { title ->
-                normalize(storyHit).contains(normalize(title)) ||
-                        normalize(title).contains(normalize(storyHit))
-            }
+            val storyHitNorm = normalize(storyHit)
+            val mainStoryHit3 = normalizedMainStoryRedirects.firstOrNull { entry ->
+                storyHitNorm.contains(entry.normalized) || entry.normalized.contains(storyHitNorm)
+            }?.title
             if (mainStoryHit3 != null) {
                 Log.d(TAG, "STEP0-3 주요 스토리 인터셉트: '$mainStoryHit3'")
                 return ResolvedEntry(
@@ -614,6 +637,13 @@ object WikiUrlResolver {
         "메인 스토리 : 시뮬라크르"
     )
 
+    private val normalizedMainStoryRedirects: List<NormEntry> by lazy {
+        MAIN_STORY_REDIRECT_TITLES.map {
+            val n = normalize(it)
+            NormEntry(it, n, n.length)
+        }
+    }
+
     private fun resolveStory(ocrTitle: String, pageNum: String): ResolvedEntry? {
         val allStories = STORY_LIST
 
@@ -621,9 +651,9 @@ object WikiUrlResolver {
         // "이야기 메인 스토리 : 코마" 등이 OCR에 잡히면 이야기/레벨 URL이 아닌
         // MainStoryEncounterResolver(주요 스토리 인카운터)로 라우팅
         val normalizedOcr = normalize(ocrTitle)
-        val redirectMatch = MAIN_STORY_REDIRECT_TITLES.firstOrNull { title ->
-            normalizedOcr.contains(normalize(title))
-        }
+        val redirectMatch = normalizedMainStoryRedirects.firstOrNull { entry ->
+            normalizedOcr.contains(entry.normalized)
+        }?.title
         if (redirectMatch != null) {
             Log.d(TAG, "주요 스토리 인터셉트: '$redirectMatch' → MainStoryEncounterResolver")
             return ResolvedEntry(
@@ -785,12 +815,6 @@ object WikiUrlResolver {
         }
         return curr[b.length]
     }
-
-    private fun normalize(s: String) =
-        s.replace(
-            Regex("""[^\p{L}\p{N}]"""),
-            ""
-        ).lowercase()
 
     private fun buildUrl(path: String): String {
         val encoded = URLEncoder.encode("서울 2033/$path", "UTF-8").replace("+", "%20")

@@ -333,7 +333,7 @@ class OverlayService : Service() {
                             btnText.setBackgroundResource(R.drawable.overlay_btn_bg_active)
                             btnText.setTextColor(0xFFFFFFFF.toInt())
                             btnText.post {
-                                scope.launch(Dispatchers.Default) {
+                                scope.launch {
                                     readAndResolve {
                                         btnText.text = getString(R.string.btn_read)
                                         btnText.setBackgroundResource(R.drawable.overlay_btn_bg)

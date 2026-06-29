@@ -59,11 +59,8 @@ class Seoul2033AccessibilityService : AccessibilityService() {
             instance?.isOverlayRunning = true
             // 게임이 현재 포그라운드에 있는지 확인해서 isGameForeground 동기화
             val inst = instance ?: return
-            val gameVisible = inst.windows?.any {
-                isTargetPackage(it.root?.packageName?.toString() ?: "")
-            } ?: false
-            inst.isGameForeground = gameVisible
-            Log.d(TAG, "오버레이 수동 시작 감지 → 플래그 동기화 (게임포그라운드=$gameVisible)")
+            inst.isGameForeground = inst.isGameVisible()
+            Log.d(TAG, "오버레이 수동 시작 감지 → 플래그 동기화 (게임포그라운드=${inst.isGameForeground})")
         }
     }
 
@@ -72,6 +69,10 @@ class Seoul2033AccessibilityService : AccessibilityService() {
     // startForegroundService() 직후 연속 이벤트로 인한 즉시 종료 방지
     private var overlayStartedAt = 0L
     private val OVERLAY_START_COOLDOWN_MS = 3_000L
+
+    /** 현재 윈도우 목록에 서울2033 패키지가 보이는지 확인 */
+    private fun isGameVisible(): Boolean =
+        windows?.any { isTargetPackage(it.root?.packageName?.toString() ?: "") } == true
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -96,10 +97,7 @@ class Seoul2033AccessibilityService : AccessibilityService() {
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
             if (!isAutoStopEnabled(this)) return
             if (!isOverlayRunning) return
-            val gameVisible = windows?.any {
-                isTargetPackage(it.root?.packageName?.toString() ?: "")
-            } ?: false
-            if (!gameVisible) {
+            if (!isGameVisible()) {
                 isGameForeground = false
                 isOverlayRunning = false
                 Log.d(TAG, "서울2033 윈도우 사라짐 감지 → 오버레이 자동 종료")
@@ -133,9 +131,7 @@ class Seoul2033AccessibilityService : AccessibilityService() {
                     Log.d(TAG, "오버레이 시작 쿨다운 중 → 종료 이벤트 무시")
                     return
                 }
-                val gameStillVisible = windows?.any {
-                    isTargetPackage(it.root?.packageName?.toString() ?: "")
-                } ?: false
+                val gameStillVisible = isGameVisible()
 
                 if (!gameStillVisible) {
                     isGameForeground = false

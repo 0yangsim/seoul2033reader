@@ -104,6 +104,9 @@ object ActiveEncounterResolver {
         "주머니를더듬자뽀족한것이손가락세개분나옵니다머리핀입니다" to "머리핀",
         "폐허엔잠긴문과잠긴상자가널려있는데이걸써서자물쇠따기능력을연마해두면나쁠건없겠죠" to "머리핀",
 
+        // 2.14 미적 감각
+        "당신의미적감각을좀더발전시킬기회를만들어도좋지않을까요" to "미적 감각",
+
         // 2.14 벌집이 됨
         // 조건: 벌집이 됨 보유 및 양봉 경험 있을 시
         // "이참에한번더시도해보는것은어떨까요" 단독 사용 시 오탐 위험 → 더 구체적인 문장 우선
@@ -213,12 +216,23 @@ object ActiveEncounterResolver {
         "코끝을스치는향긋한냄새에뭔가만들어보고싶은충동이밀려옵니다" to "허브솔트"
     )
 
-    // normalize: 공백·특수문자 제거 후 소문자화
-    private fun normalize(s: String) =
-        s.replace(
-            Regex("""[^\p{L}\p{N}]"""),
-            ""
-        ).lowercase()
+    private val NORMALIZE_REGEX = Regex("""[^\p{L}\p{N}]""")
+
+    private fun normalize(s: String) = s.replace(NORMALIZE_REGEX, "").lowercase()
+
+    // prefix 버킷 인덱스 — 전체 키 순회 대신 후보만 추출
+    private const val PREFIX_LEN = 5
+
+    private val prefixIndex: Map<String, List<Triple<String, String, Int>>> by lazy {
+        val map = HashMap<String, MutableList<Triple<String, String, Int>>>()
+        ENCOUNTER_MAP.forEachIndexed { index, (key, anchor) ->
+            if (key.length >= PREFIX_LEN) {
+                map.getOrPut(key.substring(0, PREFIX_LEN)) { mutableListOf() }
+                    .add(Triple(key, anchor, index))
+            }
+        }
+        map
+    }
 
     /**
      * OCR 텍스트에서 액티브 인카운터 섹션을 탐지.
@@ -226,30 +240,46 @@ object ActiveEncounterResolver {
      * @param rawText OCR 원문
      * @return 매칭된 ResolvedEntry, 없으면 null
      */
-
-    // ── 힌트 맵 ──────────────────────────────────────────────────────────────
-    // 앵커명 → 짧은 공략 힌트. 없으면 null (URL 표시).
-
     fun resolve(rawText: String): ResolvedEntry? {
         val cleanInput = normalize(rawText)
-
-        val matched = ENCOUNTER_MAP
-            .filter { (key, _) -> key.length >= 8 && cleanInput.contains(key) }
-            .let { hits -> val max = hits.maxOfOrNull { (k, _) -> k.length } ?: 0; hits.lastOrNull { (k, _) -> k.length == max } }
-
-        if (matched == null) {
+        if (cleanInput.length < 8) {
             Log.d(TAG, "액티브 인카운터 매칭 실패")
             return null
         }
 
-        val anchor = matched.second
-        Log.d(TAG, "액티브 인카운터 매칭: '$anchor' (키=${matched.first.take(15)}...)")
+        // 가장 긴 키 우선, 동일 길이면 ENCOUNTER_MAP 순서상 마지막 항목
+        val seen = HashSet<String>()
+        var bestKey = ""
+        var bestAnchor = ""
+        var bestLen = 0
+        var bestOrder = -1
+
+        for (start in 0..cleanInput.length - PREFIX_LEN) {
+            val bucket = prefixIndex[cleanInput.substring(start, start + PREFIX_LEN)] ?: continue
+            for ((key, anchor, order) in bucket) {
+                if (key.length < 8 || !seen.add(key)) continue
+                if (!cleanInput.contains(key)) continue
+                if (key.length > bestLen || (key.length == bestLen && order > bestOrder)) {
+                    bestKey = key
+                    bestAnchor = anchor
+                    bestLen = key.length
+                    bestOrder = order
+                }
+            }
+        }
+
+        if (bestKey.isEmpty()) {
+            Log.d(TAG, "액티브 인카운터 매칭 실패")
+            return null
+        }
+
+        Log.d(TAG, "액티브 인카운터 매칭: '$bestAnchor' (키=${bestKey.take(15)}...)")
 
         return ResolvedEntry(
-            title = anchor,
+            title = bestAnchor,
             pageNum = "",
             type = EntryType.ACTIVE_ENCOUNTER,
-            url = buildActiveEncounterUrl(anchor)
+            url = buildActiveEncounterUrl(bestAnchor)
         )
     }
 
