@@ -258,8 +258,10 @@
 
             <!-- 설정 상단 바 -->
             <LinearLayout
+                android:id="@+id/settingsTopBar"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:paddingHorizontal="8dp"
@@ -596,8 +598,10 @@
 
             <!-- 도움말 상단 바 -->
             <LinearLayout
+                android:id="@+id/helpTopBar"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:paddingHorizontal="8dp"
@@ -786,11 +790,56 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="• 자동 시작: 켜두면 서울2033 실행 시 오버레이가 자동으로 시작됩니다.\n• 자동 종료: 켜두면 게임이 완전히 종료될 때 오버레이도 자동으로 꺼집니다.\n• 두 옵션은 독립적으로 설정할 수 있습니다."
+                            android:fontFamily="@font/kopub_batang"
+                            android:lineSpacingExtra="4dp"
+                            android:text="• 자동 시작: 켜두면 서울2033 실행 시 오버레이가 자동으로 시작됩니다.\n• 자동 종료: 켜두면 게임이 화면에 잡히지 않을 때 오버레이도 자동으로 꺼집니다.\n• 두 옵션은 독립적으로 설정할 수 있습니다."
+                            android:textColor="#AAAAAA"
+                            android:textSize="13sp" />
+
+                    </LinearLayout>
+
+                    <!-- 문의 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="문의"
+                        android:textSize="10sp"
+                        android:fontFamily="@font/kopub_batang"
+                        android:textColor="#444444"
+                        android:letterSpacing="0.12"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="10dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/status_card"
+                        android:paddingHorizontal="20dp"
+                        android:paddingVertical="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="버그 제보, 인카운터 누락 제보, 기타 문의는 아래 버튼으로 연락해 주세요."
                             android:textColor="#AAAAAA"
                             android:textSize="13sp"
                             android:fontFamily="@font/kopub_batang"
-                            android:lineSpacingExtra="4dp"/>
+                            android:lineSpacingExtra="4dp"
+                            android:layout_marginBottom="12dp"/>
+
+                        <TextView
+                            android:id="@+id/btnContactEmail"
+                            android:layout_width="match_parent"
+                            android:layout_height="46dp"
+                            android:background="@drawable/btn_secondary"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:fontFamily="@font/kopub_batang"
+                            android:gravity="center"
+                            android:text="✉ nigname2@gmail.com"
+                            android:textColor="#BBBBBB"
+                            android:textSize="13sp" />
 
                     </LinearLayout>
 

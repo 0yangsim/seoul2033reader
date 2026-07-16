@@ -13,6 +13,8 @@ import android.widget.Toast
 import android.widget.ViewFlipper
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.appcompat.widget.SwitchCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -107,6 +109,14 @@ class MainActivity : AppCompatActivity() {
 
     // ── 설정 화면 ──────────────────────────────────────────────────────────
     private fun setupSettingsScreen() {
+        // 상단 바 status bar 높이만큼 padding 추가 (뒤로가기 버튼 겹침 방지)
+        val settingsBar = findViewById<android.view.View>(R.id.settingsTopBar)
+        ViewCompat.setOnApplyWindowInsetsListener(settingsBar) { v, insets ->
+            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            v.setPadding(v.paddingLeft, top, v.paddingRight, v.paddingBottom)
+            insets
+        }
+
         findViewById<TextView>(R.id.btnSettingsBack).setOnClickListener {
             viewFlipper.displayedChild = SCREEN_MAIN
         }
@@ -289,6 +299,21 @@ class MainActivity : AppCompatActivity() {
 
     // ── 도움말 화면 ────────────────────────────────────────────────────────
     private fun setupHelpScreen() {
+        // 상단 바 status bar 높이만큼 padding 추가 (뒤로가기 버튼 겹침 방지)
+        val helpBar = findViewById<android.view.View>(R.id.helpTopBar)
+        ViewCompat.setOnApplyWindowInsetsListener(helpBar) { v, insets ->
+            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            v.setPadding(v.paddingLeft, top, v.paddingRight, v.paddingBottom)
+            insets
+        }
+
+        // 문의 이메일 — 탭하면 주소를 클립보드에 복사
+        findViewById<TextView>(R.id.btnContactEmail).setOnClickListener {
+            val clipboard = getSystemService(android.content.ClipboardManager::class.java)
+            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("이메일", "nigname2@gmail.com"))
+            android.widget.Toast.makeText(this, "이메일 주소가 클립보드에 복사되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+        }
+
         findViewById<TextView>(R.id.btnHelpBack).setOnClickListener {
             viewFlipper.displayedChild = SCREEN_MAIN
         }
