@@ -11,7 +11,7 @@ android {
         applicationId "com.seoul2033wiki"
         minSdk 29
         targetSdk 35
-        versionCode 26
+        versionCode 27
         versionName "1.17"
 
         ndk {

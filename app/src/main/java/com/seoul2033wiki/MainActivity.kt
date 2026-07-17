@@ -69,7 +69,12 @@ class MainActivity : AppCompatActivity() {
                 prefs.edit().putBoolean("accessibility_declined", true).apply()
                 Toast.makeText(this, "접근성 서비스 거부됨 — 접근성 기능을 사용할 수 없습니다.", Toast.LENGTH_LONG).show()
             }
-            .setCancelable(false)
+            .setCancelable(true)
+            .setOnCancelListener {
+                // 뒤로가기/바깥 터치로 닫은 경우도 거부로 처리 (자동화 테스트 시 다이얼로그가
+                // 무한정 막고 있는 것처럼 보이는 문제 방지)
+                prefs.edit().putBoolean("accessibility_declined", true).apply()
+            }
             .show()
     }
 
@@ -378,7 +383,11 @@ class MainActivity : AppCompatActivity() {
                 .setNegativeButton("거부") { _, _ ->
                     Toast.makeText(this, "접근성 서비스 거부됨 — 접근성 기능을 사용할 수 없습니다.", Toast.LENGTH_LONG).show()
                 }
-                .setCancelable(false)
+                .setCancelable(true)
+                .setOnCancelListener {
+                    // 뒤로가기/바깥 터치로 닫힌 경우도 정상 종료로 처리 (자동화 테스트 시
+                    // 다이얼로그가 무한정 막고 있는 것처럼 보이는 문제 방지)
+                }
                 .show()
             return
         }
@@ -386,7 +395,13 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
     }
 
-    private fun startOverlay() { startService(Intent(this, OverlayService::class.java)) }
+    private fun startOverlay() {
+        if (!Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "먼저 오버레이 권한을 허용해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        startService(Intent(this, OverlayService::class.java))
+    }
     private fun stopOverlay()  { stopService(Intent(this, OverlayService::class.java)) }
 
     companion object {
