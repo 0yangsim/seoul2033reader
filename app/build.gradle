@@ -11,8 +11,8 @@ android {
         applicationId "com.seoul2033wiki"
         minSdk 29
         targetSdk 35
-        versionCode 27
-        versionName "1.17"
+        versionCode 28
+        versionName "1.18"
 
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
