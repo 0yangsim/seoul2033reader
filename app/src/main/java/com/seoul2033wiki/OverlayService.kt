@@ -42,12 +42,18 @@ class OverlayService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "overlay_channel"
+
+        // 접근성 서비스(Seoul2033AccessibilityService)가 자동 감지 시 직접 호출할 수 있도록 노출
+        @Volatile
+        var instance: OverlayService? = null
+            private set
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
@@ -390,54 +396,7 @@ class OverlayService : Service() {
         val lineCount = rawText.lines().count { it.isNotBlank() }
         Log.d("Seoul2033Wiki", "수집 텍스트 (${lineCount}줄):\n$rawText")
 
-        val entry = withContext(Dispatchers.Default) {
-            val bottomEntry = WikiUrlResolver.resolve(rawText)
-            when {
-                bottomEntry != null
-                        && bottomEntry.type != EntryType.BASIC
-                        && bottomEntry.type != EntryType.MAIN_STORY
-                        && bottomEntry.type != EntryType.EXPANSION -> {
-                    bottomEntry
-                }
-                bottomEntry != null && bottomEntry.type == EntryType.EXPANSION -> {
-                    if (bottomEntry.url.contains('#')) {
-                        // Case B expansionAnchor 있음 → URL 이미 결정됨, ExpansionEncounterResolver 스킵
-                        // 제목을 "확장팩 - 섹션앵커" 형태로 구성
-                        val anchor = bottomEntry.url
-                            .substringAfterLast('#')
-                            .let { java.net.URLDecoder.decode(it, "UTF-8") }
-                        Log.d("Seoul2033Wiki", "확장팩 앵커 포함 URL 확정: '${bottomEntry.title}' → $anchor")
-                        bottomEntry.copy(title = "${bottomEntry.title} - $anchor")
-                    } else {
-                        Log.d("Seoul2033Wiki", "확장팩 인식: '${bottomEntry.title}' → 섹션 탐지")
-                        val expansionEntry = ExpansionEncounterResolver.resolve(rawText, bottomEntry.title)
-                            ?: run {
-                                Log.d("Seoul2033Wiki", "확장팩 섹션 매칭 실패 → 폴백: '${bottomEntry.title}'")
-                                ResolvedEntry(
-                                    title = bottomEntry.title,
-                                    pageNum = "",
-                                    type = EntryType.EXPANSION,
-                                    url = bottomEntry.url
-                                )
-                            }
-                        // Case B crossLink 보존
-                        if (bottomEntry.crossLinkUrl != null) {
-                            expansionEntry.copy(
-                                crossLinkUrl = bottomEntry.crossLinkUrl,
-                                crossLinkLabel = bottomEntry.crossLinkLabel
-                            )
-                        } else expansionEntry
-                    }
-                }
-                else -> {
-                    Log.d("Seoul2033Wiki", "풀체인 resolver 실행 (확장팩 제외)")
-                    BasicEncounterResolver.resolve(rawText)
-                        ?: ActiveEncounterResolver.resolve(rawText)
-                        ?: HardModeEncounterResolver.resolve(rawText)
-                        ?: MainStoryEncounterResolver.resolve(rawText)
-                }
-            }
-        }
+        val entry = withContext(Dispatchers.Default) { resolveEntry(rawText) }
         withContext(Dispatchers.Main) {
             if (entry != null) {
                 showResultPopup(entry)
@@ -450,6 +409,133 @@ class OverlayService : Service() {
             }
             onDone()
         }
+    }
+
+    // rawText → ResolvedEntry 매칭 체인. readAndResolve(수동 Read)와 자동 감지(선택지 차단)가 공유.
+    // 반드시 Dispatchers.Default 등 백그라운드 스레드에서 호출할 것 (연산 비용 있음).
+    private fun resolveEntry(rawText: String): ResolvedEntry? {
+        val bottomEntry = WikiUrlResolver.resolve(rawText)
+        return when {
+            bottomEntry != null
+                    && bottomEntry.type != EntryType.BASIC
+                    && bottomEntry.type != EntryType.MAIN_STORY
+                    && bottomEntry.type != EntryType.EXPANSION -> {
+                bottomEntry
+            }
+            bottomEntry != null && bottomEntry.type == EntryType.EXPANSION -> {
+                if (bottomEntry.url.contains('#')) {
+                    // Case B expansionAnchor 있음 → URL 이미 결정됨, ExpansionEncounterResolver 스킵
+                    // 제목을 "확장팩 - 섹션앵커" 형태로 구성
+                    val anchor = bottomEntry.url
+                        .substringAfterLast('#')
+                        .let { java.net.URLDecoder.decode(it, "UTF-8") }
+                    Log.d("Seoul2033Wiki", "확장팩 앵커 포함 URL 확정: '${bottomEntry.title}' → $anchor")
+                    bottomEntry.copy(title = "${bottomEntry.title} - $anchor")
+                } else {
+                    Log.d("Seoul2033Wiki", "확장팩 인식: '${bottomEntry.title}' → 섹션 탐지")
+                    val expansionEntry = ExpansionEncounterResolver.resolve(rawText, bottomEntry.title)
+                        ?: run {
+                            Log.d("Seoul2033Wiki", "확장팩 섹션 매칭 실패 → 폴백: '${bottomEntry.title}'")
+                            ResolvedEntry(
+                                title = bottomEntry.title,
+                                pageNum = "",
+                                type = EntryType.EXPANSION,
+                                url = bottomEntry.url
+                            )
+                        }
+                    // Case B crossLink 보존
+                    if (bottomEntry.crossLinkUrl != null) {
+                        expansionEntry.copy(
+                            crossLinkUrl = bottomEntry.crossLinkUrl,
+                            crossLinkLabel = bottomEntry.crossLinkLabel
+                        )
+                    } else expansionEntry
+                }
+            }
+            else -> {
+                Log.d("Seoul2033Wiki", "풀체인 resolver 실행 (확장팩 제외)")
+                BasicEncounterResolver.resolve(rawText)
+                    ?: ActiveEncounterResolver.resolve(rawText)
+                    ?: HardModeEncounterResolver.resolve(rawText)
+                    ?: MainStoryEncounterResolver.resolve(rawText)
+            }
+        }
+    }
+
+    // ── 선택지 자동 차단 (배경 감지) ────────────────────────────────────────────
+    // Seoul2033AccessibilityService가 게임 화면 콘텐츠 변경을 디바운스/쿨다운 처리한 뒤 호출.
+    // 여기서 다시 한번 무거운 작업(추출+매칭)이 일어나므로 항상 백그라운드 스레드에서 처리.
+    private var isAutoDetecting = false
+
+    fun autoDetectAndBlockChoice(rawText: String) {
+        if (isAutoDetecting) return  // 이전 감지가 아직 처리 중이면 겹쳐 실행하지 않음
+        if (rawText.isBlank()) return
+
+        isAutoDetecting = true
+        scope.launch {
+            try {
+                val shouldBlock = withContext(Dispatchers.Default) {
+                    val disabled = ChoiceBlockKeys.disabledCategories(this@OverlayService)
+                    ChoiceBlockKeys.matches(rawText, disabled)
+                }
+                Log.d("Seoul2033Wiki", "선택지차단: 키 매칭 결과=$shouldBlock")
+                if (shouldBlock) {
+                    val ms = getSharedPreferences("settings", MODE_PRIVATE)
+                        .getLong(MainActivity.KEY_CHOICE_BLOCK_MS, MainActivity.DEFAULT_CHOICE_BLOCK_MS)
+                    blockBottomTouchTemporarily(ms)
+                }
+            } finally {
+                isAutoDetecting = false
+            }
+        }
+    }
+
+    // 화면 하단 일정 비율만큼 터치를 잠시 가로채는 투명 오버레이.
+    // 이미 떠 있는 상태에서 다시 호출되면 제거 타이머만 재설정(연장)한다.
+    private var choiceBlockView: View? = null
+    private val choiceBlockRemoveRunnable = Runnable { removeChoiceBlock() }
+    private val CHOICE_BLOCK_HEIGHT_RATIO = 0.4f
+
+    private fun blockBottomTouchTemporarily(durationMs: Long) {
+        handler.post {
+            if (choiceBlockView == null) {
+                val metrics = resources.displayMetrics
+                val blockHeight = (metrics.heightPixels * CHOICE_BLOCK_HEIGHT_RATIO).toInt()
+
+                val view = View(this).apply {
+                    setBackgroundColor(0x00000000) // 완전 투명 — 시각적 변화 없이 터치만 차단
+                }
+                val params = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    blockHeight,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, // FLAG_NOT_TOUCHABLE 없음 → 터치 가로챔
+                    PixelFormat.TRANSLUCENT
+                ).apply { gravity = Gravity.BOTTOM }
+
+                try {
+                    windowManager.addView(view, params)
+                    choiceBlockView = view
+                    Log.d("Seoul2033Wiki", "선택지차단: 시작 (${durationMs}ms, 높이=${blockHeight}px)")
+                } catch (e: Exception) {
+                    Log.e("Seoul2033Wiki", "선택지차단: 뷰 추가 실패", e)
+                    return@post
+                }
+            } else {
+                Log.d("Seoul2033Wiki", "선택지차단: 이미 표시 중 → 제거 타이머만 연장 (${durationMs}ms)")
+            }
+
+            // 감지가 연달아 일어나면 차단 시간을 앞에서부터 다시 카운트
+            handler.removeCallbacks(choiceBlockRemoveRunnable)
+            handler.postDelayed(choiceBlockRemoveRunnable, durationMs)
+        }
+    }
+
+    private fun removeChoiceBlock() {
+        if (choiceBlockView == null) return
+        choiceBlockView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
+        choiceBlockView = null
+        Log.d("Seoul2033Wiki", "선택지차단: 해제")
     }
 
     // ── 결과 팝업 ────────────────────────────────────────────────────────────
@@ -1210,6 +1296,8 @@ class OverlayService : Service() {
         dismissPopup()
         dismissWebOverlay()
         hideDropZone()
+        handler.removeCallbacks(choiceBlockRemoveRunnable)
+        removeChoiceBlock()
         overlayView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
         overlayView = null
         isCapturing = false
@@ -1235,5 +1323,6 @@ class OverlayService : Service() {
         super.onDestroy()
         releaseAll()
         Seoul2033AccessibilityService.notifyOverlayStopped()
+        instance = null
     }
 }

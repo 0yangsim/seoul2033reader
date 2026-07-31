@@ -584,6 +584,34 @@
                         android:background="@drawable/btn_secondary"
                         android:stateListAnimator="@null"/>
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#1E1E1E"
+                        android:layout_marginTop="28dp"
+                        android:layout_marginBottom="28dp"/>
+
+                    <!-- 실험용 기능 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="기타"
+                        android:textSize="10sp"
+                        android:fontFamily="@font/kopub_batang"
+                        android:textColor="#444444"
+                        android:letterSpacing="0.12"
+                        android:layout_marginBottom="10dp"/>
+
+                    <Button
+                        android:id="@+id/btnExperimentalFeatures"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:text="실험용 기능"
+                        android:textColor="#BBBBBB"
+                        android:textSize="13sp"
+                        android:background="@drawable/btn_secondary"
+                        android:stateListAnimator="@null"/>
+
                 </LinearLayout>
             </ScrollView>
         </LinearLayout>
@@ -798,6 +826,37 @@
 
                     </LinearLayout>
 
+                    <!-- 실험용 기능 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="실험용 기능"
+                        android:textSize="10sp"
+                        android:fontFamily="@font/kopub_batang"
+                        android:textColor="#444444"
+                        android:letterSpacing="0.12"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="10dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/status_card"
+                        android:paddingHorizontal="20dp"
+                        android:paddingVertical="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/kopub_batang"
+                            android:lineSpacingExtra="4dp"
+                            android:text="아직 제대로 성능 및 최적화 체크를 하지 못한 기능입니다. 켜지 않아도 무방합니다.\n\n• 선택지 차단: 특정 텍스트를 인식하면 일정 시간 동안 화면 하단 40%를 터치하지 못하도록 막습니다. Read 버튼이 활성화된 경우에만 실행됩니다."
+                            android:textColor="#AAAAAA"
+                            android:textSize="13sp" />
+
+                    </LinearLayout>
+
                     <!-- 문의 -->
                     <TextView
                         android:layout_width="wrap_content"
@@ -840,6 +899,428 @@
                             android:text="✉ nigname2@gmail.com"
                             android:textColor="#BBBBBB"
                             android:textSize="13sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
+
+        <!-- ════════════════════════════════════════════════════════ -->
+        <!-- 화면 3 : 선택지 자동 차단 설정                            -->
+        <!-- ════════════════════════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- 선택지 자동 차단 상단 바 -->
+            <LinearLayout
+                android:id="@+id/choiceBlockTopBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="8dp"
+                android:background="#111111">
+
+                <TextView
+                    android:id="@+id/btnChoiceBlockBack"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="←"
+                    android:textSize="22sp"
+                    android:textColor="#AAAAAA"
+                    android:gravity="center"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="뒤로"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="선택지 자동 차단"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/kopub_batang"
+                    android:textColor="#EEEEEE"
+                    android:paddingStart="4dp"/>
+
+            </LinearLayout>
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="24dp"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="48dp">
+
+                    <!-- 켜기/끄기 + 차단 시간 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/status_card"
+                        android:paddingHorizontal="20dp"
+                        android:paddingVertical="14dp"
+                        android:layout_marginBottom="28dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/kopub_batang"
+                                    android:text="선택지 자동 차단"
+                                    android:textColor="#BBBBBB"
+                                    android:textSize="14sp"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/kopub_batang"
+                                    android:text="아래에서 켠 항목의 인카운터 진입이 감지되면 화면 하단 선택지를 잠시 막습니다."
+                                    android:textColor="#555555"
+                                    android:textSize="11sp" />
+
+                            </LinearLayout>
+
+                            <androidx.appcompat.widget.SwitchCompat
+                                android:id="@+id/switchChoiceBlock"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="false"/>
+
+                        </LinearLayout>
+
+                        <RadioGroup
+                            android:id="@+id/radioGroupChoiceBlockDuration"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:id="@+id/radioBlock500"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:fontFamily="@font/kopub_batang"
+                                android:text="0.5초"
+                                android:textColor="#BBBBBB"
+                                android:textSize="13sp"/>
+
+                            <RadioButton
+                                android:id="@+id/radioBlock1000"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:checked="true"
+                                android:fontFamily="@font/kopub_batang"
+                                android:text="1초"
+                                android:textColor="#BBBBBB"
+                                android:textSize="13sp"/>
+
+                            <RadioButton
+                                android:id="@+id/radioBlock2000"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/kopub_batang"
+                                android:text="2초"
+                                android:textColor="#BBBBBB"
+                                android:textSize="13sp"/>
+
+                        </RadioGroup>
+
+                    </LinearLayout>
+
+                    <!-- 섹션 레이블: 메인스토리 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="메인스토리"
+                            android:textSize="10sp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:textColor="#444444"
+                            android:letterSpacing="0.12"/>
+
+                        <TextView
+                            android:id="@+id/btnMainAllOn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="8dp"
+                            android:text="모두 켜기"
+                            android:textColor="#777777"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+                        <TextView
+                            android:id="@+id/btnMainAllOff"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="8dp"
+                            android:text="모두 끄기"
+                            android:textColor="#777777"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/containerMainStoryCategories"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/status_card"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="6dp"
+                        android:layout_marginBottom="28dp"/>
+
+                    <!-- 섹션 레이블: 확장팩 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="확장팩"
+                            android:textSize="10sp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:textColor="#444444"
+                            android:letterSpacing="0.12"/>
+
+                        <TextView
+                            android:id="@+id/btnExpAllOn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="8dp"
+                            android:text="모두 켜기"
+                            android:textColor="#777777"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+                        <TextView
+                            android:id="@+id/btnExpAllOff"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="8dp"
+                            android:text="모두 끄기"
+                            android:textColor="#777777"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/containerExpansionCategories"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/status_card"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="6dp"
+                        android:layout_marginBottom="28dp"/>
+
+                    <!-- 섹션 레이블: 이야기 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="이야기"
+                            android:textSize="10sp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:textColor="#444444"
+                            android:letterSpacing="0.12"/>
+
+                        <TextView
+                            android:id="@+id/btnStoryAllOn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="8dp"
+                            android:text="모두 켜기"
+                            android:textColor="#777777"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+                        <TextView
+                            android:id="@+id/btnStoryAllOff"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="8dp"
+                            android:text="모두 끄기"
+                            android:textColor="#777777"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/kopub_batang"
+                            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/containerStoryCategories"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/status_card"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="6dp"/>
+
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
+
+        <!-- ════════════════════════════════════════════════════════ -->
+        <!-- 화면 4 : 실험용 기능                                      -->
+        <!-- ════════════════════════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- 실험용 기능 상단 바 -->
+            <LinearLayout
+                android:id="@+id/experimentalTopBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="8dp"
+                android:background="#111111">
+
+                <TextView
+                    android:id="@+id/btnExperimentalBack"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="←"
+                    android:textSize="22sp"
+                    android:textColor="#AAAAAA"
+                    android:gravity="center"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="뒤로"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="실험용 기능"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/kopub_batang"
+                    android:textColor="#EEEEEE"
+                    android:paddingStart="4dp"/>
+
+            </LinearLayout>
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="24dp"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="48dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="아직 다듬는 중인 기능들이에요. 예고 없이 바뀌거나 사라질 수 있습니다."
+                        android:textSize="11sp"
+                        android:fontFamily="@font/kopub_batang"
+                        android:textColor="#555555"
+                        android:layout_marginBottom="20dp"/>
+
+                    <!-- 선택지 자동 차단 (설정 화면으로 이동) -->
+                    <LinearLayout
+                        android:id="@+id/rowChoiceBlockSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/status_card"
+                        android:paddingHorizontal="20dp"
+                        android:paddingVertical="14dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/kopub_batang"
+                                android:text="선택지 자동 차단"
+                                android:textColor="#BBBBBB"
+                                android:textSize="14sp"/>
+
+                            <TextView
+                                android:id="@+id/tvChoiceBlockSummary"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/kopub_batang"
+                                android:text="꺼짐"
+                                android:textColor="#555555"
+                                android:textSize="11sp" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="›"
+                            android:textSize="20sp"
+                            android:textColor="#666666"/>
 
                     </LinearLayout>
 
