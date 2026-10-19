@@ -8,6 +8,8 @@
     <!-- specialUse 타입 FGS (Android 14+) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+ 알림 표시 권한 (수동 알림 + FCM 알림 둘 다 필요) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -55,6 +57,19 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
         </service>
+
+        <!-- FCM 공지 알림 수신 서비스 -->
+        <service
+            android:name=".Seoul2033FirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="manual_alert_channel" />
 
     </application>
 </manifest>

@@ -102,6 +102,13 @@ class OverlayService : Service() {
                 if (isTouchable) heightOnPct else heightOffPct)
             return START_NOT_STICKY
         }
+        if (intent?.action == MainActivity.ACTION_SET_BTN_SCALE) {
+            val scale = intent.getFloatExtra(MainActivity.EXTRA_BTN_SCALE_VALUE, 1f)
+            overlayView?.findViewById<TextView>(R.id.overlayBtnText)?.let {
+                applyOverlayBtnScale(it, scale)
+            }
+            return START_NOT_STICKY
+        }
         if (intent?.action == MainActivity.ACTION_SHOW_EXAMPLE) {
             showWebOverlay(ResolvedEntry(
                 title = "랜덤 인카운터", pageNum = "", type = EntryType.BASIC,
@@ -250,6 +257,7 @@ class OverlayService : Service() {
 
         val btnText = newView.findViewById<TextView>(R.id.overlayBtnText)
         btnText.setTextColor(0xFFF5F0C8.toInt())
+        applyOverlayBtnScale(btnText, prefs.getFloat(MainActivity.KEY_OVERLAY_BTN_SCALE, 1f))
 
         var initialX = 0; var initialY = 0
         var initialTouchX = 0f; var initialTouchY = 0f
@@ -454,10 +462,20 @@ class OverlayService : Service() {
             }
             else -> {
                 Log.d("Seoul2033Wiki", "풀체인 resolver 실행 (확장팩 제외)")
-                BasicEncounterResolver.resolve(rawText)
-                    ?: ActiveEncounterResolver.resolve(rawText)
-                    ?: HardModeEncounterResolver.resolve(rawText)
-                    ?: MainStoryEncounterResolver.resolve(rawText)
+                if (bottomEntry?.type == EntryType.MAIN_STORY) {
+                    // 하단 제목에서 이미 주요 스토리로 판별됨 → 주요 스토리 리졸버를 먼저.
+                    // (Basic을 먼저 돌리면 Basic의 fuzzy 오탐이 주요 스토리 정확 매칭보다 앞서버림)
+                    MainStoryEncounterResolver.resolve(rawText)
+                        ?: BasicEncounterResolver.resolve(rawText)
+                        ?: ActiveEncounterResolver.resolve(rawText)
+                        ?: HardModeEncounterResolver.resolve(rawText)
+                        ?: bottomEntry // 섹션 매칭 실패 → 제목으로 알아낸 주요 스토리 페이지로 폴백
+                } else {
+                    BasicEncounterResolver.resolve(rawText)
+                        ?: ActiveEncounterResolver.resolve(rawText)
+                        ?: HardModeEncounterResolver.resolve(rawText)
+                        ?: MainStoryEncounterResolver.resolve(rawText)
+                }
             }
         }
     }
@@ -843,7 +861,24 @@ class OverlayService : Service() {
         return rawX in left..right && rawY in top..bottom
     }
 
-    private fun dismissWebOverlay() {
+    // ── Read 버튼 크기 조절 ──────────────────────────────────────────────────
+    // overlay_button.xml의 기본 크기(80dp x 32dp, 텍스트 13sp)를 기준으로
+    // 배율만큼 실제 크기를 재계산해서 적용한다. scaleX/Y가 아니라 LayoutParams와
+    // textSize를 직접 바꾸는 방식이라 터치 판정 영역도 화면에 보이는 크기와 정확히 일치한다.
+    private fun applyOverlayBtnScale(btnText: TextView, scale: Float) {
+        val density = resources.displayMetrics.density
+        val clamped = scale.coerceIn(0.5f, 2.0f)
+        val lp = btnText.layoutParams
+        lp.width = (80 * clamped * density).toInt()
+        lp.height = (32 * clamped * density).toInt()
+        btnText.layoutParams = lp
+        btnText.textSize = 13f * clamped
+    }
+
+    // stopIfStandalone: 사용자가 팝업을 직접 닫는 경우에만 true.
+    //   - showWebOverlay() 시작 시 기존 팝업 정리, releaseAll() 정리처럼
+    //     "곧바로 새로 띄우거나 이미 종료 중"인 호출은 false로 넘겨서 서비스를 끄지 않는다.
+    private fun dismissWebOverlay(stopIfStandalone: Boolean = true) {
         webOverlayView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
         webTopBarView?.let { try { windowManager.removeView(it) } catch (_: Exception) {} }
         webOverlayView = null
@@ -854,6 +889,12 @@ class OverlayService : Service() {
         isTouchable = true
         hidePeekTab()
         hidePeekDropZone()
+
+        // "예시 팝업 보기"처럼 Read 버튼(overlayView) 없이 웹뷰 오버레이만 단독으로
+        // 띄운 경우, 사용자가 팝업을 닫으면 서비스도 함께 종료한다.
+        if (stopIfStandalone && overlayView == null) {
+            stopSelf()
+        }
     }
 
     // ── 터치 토글 ────────────────────────────────────────────────────────────
@@ -1014,7 +1055,7 @@ class OverlayService : Service() {
 
     @android.annotation.SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     private fun showWebOverlay(entry: ResolvedEntry) {
-        dismissWebOverlay()
+        dismissWebOverlay(stopIfStandalone = false)
         val url = entry.url
         val ctx = this
         val metrics = resources.displayMetrics
@@ -1294,7 +1335,7 @@ class OverlayService : Service() {
     // ── 공통 정리 ────────────────────────────────────────────────────────────
     private fun releaseAll() {
         dismissPopup()
-        dismissWebOverlay()
+        dismissWebOverlay(stopIfStandalone = false)
         hideDropZone()
         handler.removeCallbacks(choiceBlockRemoveRunnable)
         removeChoiceBlock()

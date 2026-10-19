@@ -1,6 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  라이트모드 팔레트 (기본 리소스 폴더 = values/colors.xml).
+  다크모드 값은 values-night/colors.xml에 동일한 이름으로 정의되어 있음.
+
+  주의: 폰 시스템 설정과 무관하게 ThemeManager가
+  AppCompatDelegate.setDefaultNightMode(MODE_NIGHT_YES / MODE_NIGHT_NO)를
+  직접 호출해서 night 리소스 세트를 강제로 켜고 끈다.
+-->
 <resources>
-    <color name="colorPrimary">#1E88E5</color>
-    <color name="colorPrimaryVariant">#1565C0</color>
-    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="color_bg_root">#F4F4F4</color>
+    <color name="color_bg_topbar">#FFFFFF</color>
+
+    <color name="color_text_title">#1A1A1A</color>
+    <color name="color_text_body">#3D3D3D</color>
+    <color name="color_text_help">#555555</color>
+    <color name="color_text_tertiary">#6E6E6E</color>
+    <color name="color_text_muted">#8A8A8A</color>
+    <color name="color_text_hint">#9A9A9A</color>
+    <color name="color_text_label">#8A8A8A</color>
+
+    <color name="color_chevron">#9A9A9A</color>
+    <color name="color_divider">#DDDDDD</color>
+    <color name="color_divider_soft">#EAEAEA</color>
+
+    <color name="color_danger">#D9364A</color>
+
+    <!-- 버튼 / 카드 드로어블용 -->
+    <color name="color_card_bg">#FFFFFF</color>
+    <color name="color_card_stroke">#E0E0E0</color>
+
+    <color name="color_btn_manage_bg">#FFFFFF</color>
+    <color name="color_btn_manage_stroke">#CFCFCF</color>
+
+    <color name="color_btn_primary_bg">#232323</color>
+    <color name="color_btn_primary_stroke">#4A4A4A</color>
+    <!-- 다크/라이트 공통 고정값 — 시작 버튼은 두 테마에서 모두 어두운 배경이라 글자색을 고정한다 -->
+    <color name="color_btn_primary_text">#F2F2F2</color>
+
+    <color name="color_btn_secondary_bg">#FFFFFF</color>
+    <color name="color_btn_secondary_stroke">#C7C7C7</color>
+
+    <color name="color_btn_stop_bg">#FFFFFF</color>
+    <color name="color_btn_stop_stroke">#D6D6D6</color>
 </resources>

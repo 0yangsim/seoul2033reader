@@ -87,16 +87,19 @@ class Seoul2033AccessibilityService : AccessibilityService() {
     private val contentChangeRunnable = Runnable {
         throttleScheduled = false
 
-        // 1) 경량 확인 — 텍스트 있는 첫 노드까지만 순회 (전체 트리 순회보다 훨씬 쌈)
+        // 경량 확인 — 텍스트 있는 첫 노드까지만 순회 (전체 트리 순회보다 훨씬 쌈)
         val firstText = extractFirstText()
         if (firstText.isNullOrEmpty() || firstText == lastFirstLine) return@Runnable
-        Log.d(TAG, "선택지차단: 첫 노드 변경 감지 → '${firstText.take(20)}...'")
+        Log.d(TAG, "콘텐츠변경: 첫 노드 변경 감지 → '$firstText'")
         lastFirstLine = firstText
 
-        // 2) 실제로 바뀐 경우에만 전체 추출 + 매칭 수행
-        val fullText = extractGameText() ?: return@Runnable
-        Log.d(TAG, "선택지차단: 전체 추출 완료 (${fullText.length}자) → OverlayService 전달")
-        OverlayService.instance?.autoDetectAndBlockChoice(fullText)
+        // 전체 트리를 다시 훑지 않고, 방금 읽은 firstText로 바로 매칭.
+        // 선택지 차단 키는 인카운터 본문 도입부 문장이라
+        // extractFirstText()가 잡아내는 첫 노드 텍스트만으로 충분히 매칭된다.
+        if (isChoiceBlockEnabled(this)) {
+            Log.d(TAG, "선택지차단: firstText로 즉시 매칭 시도 → '$firstText' → OverlayService 전달")
+            OverlayService.instance?.autoDetectAndBlockChoice(firstText)
+        }
     }
 
     /** 현재 윈도우 목록에 서울2033 패키지가 보이는지 확인 */
@@ -126,7 +129,8 @@ class Seoul2033AccessibilityService : AccessibilityService() {
     override fun onInterrupt() {}
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // 선택지 자동 차단: 연속 이벤트가 몰려도 최대 100ms 안에는 반드시 한 번 경량 확인 실행
+        // 콘텐츠 변경 감지: 연속 이벤트가 몰려도 최대 100ms 안에는 반드시 한 번 경량 확인 실행.
+        // 선택지 자동 차단이 켜져 있으면 동작.
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             if (!isOverlayRunning) return
             if (!isChoiceBlockEnabled(this)) return
@@ -222,10 +226,20 @@ class Seoul2033AccessibilityService : AccessibilityService() {
     // 변경 감지 전용 — 텍스트가 있는 첫 노드를 찾으면 그 즉시 순회를 멈춘다.
     // extractGameText()처럼 트리 전체를 다 훑지 않아서 상시 호출해도 부담이 적음.
     //
+    // 노드 하나만 보면 인카운터 본문이 여러 노드로 쪼개져 있을 때 키구문이 잘릴 수 있어서,
+    // FIRST_TEXT_CHAR_LIMIT(글자 수 상한)까지는 뒤이은 노드들도 계속 이어 붙여서 읽는다.
+    // 상한에 도달하는 즉시 순회를 멈춘다 — 전체 트리를 다 훑는 것보다는 여전히 훨씬 쌈.
+    //
     // "진행도" 라벨이 맨 처음(첫 유의미한 텍스트)으로 나오면 인벤토리 화면이 열려 있다는
     // 뜻이므로 순회를 아예 중단하고 null을 반환한다. 인벤토리 중에는 선택지 차단이
     // 필요 없고, lastFirstLine도 갱신하지 않아 인벤토리를 닫은 뒤 실제 콘텐츠 변화는
     // 그대로 정상 감지된다.
+    private val FIRST_TEXT_CHAR_LIMIT = 13
+
+    // 공백·특수문자는 상한 계산에서 제외 (matches()가 normalize()로 어차피 걷어내므로,
+    // 상한도 "실제 매칭에 쓰이는 글자 수" 기준으로 재야 낭비가 없다)
+    private fun meaningfulLength(s: CharSequence): Int = s.count { it.isLetterOrDigit() }
+
     @Suppress("DEPRECATION")
     private fun extractFirstText(): String? {
         val windows = windows ?: return null
@@ -236,40 +250,54 @@ class Seoul2033AccessibilityService : AccessibilityService() {
                 continue
             }
             val abort = booleanArrayOf(false)
-            val found = findFirstText(root, abort)
+            val sb = StringBuilder()
+            collectFirstText(root, abort, sb)
             root.recycle()
             if (abort[0]) return null
-            if (found != null) return found
+            if (sb.isNotEmpty()) return sb.toString()
         }
         return null
     }
 
-    // findFirstText 변경 감지에서 건너뛸 정적 HUD 라벨.
+    // collectFirstText 변경 감지에서 건너뛸 정적 HUD 라벨.
     // 화면 상단에 항상 고정으로 떠 있어서 변경 감지 기준으로 쓰면
     // 최초 1회 이후 영원히 "변경 없음"으로 오판되어 선택지 자동 차단이 멈춘다.
     private val hudSkipLabels = setOf("체력", "멘탈", "돈")
 
     // 맨 처음(첫 유의미한 텍스트)으로 이 라벨이 나오면 인벤토리 화면 → 순회 전체 중단.
+    // 첫 글자가 숫자인 경우도 동일하게 처리 (페이지 번호 등 UI 요소로 간주).
     private val abortOnFirstLabels = setOf("진행도")
 
     @Suppress("DEPRECATION")
-    private fun findFirstText(node: AccessibilityNodeInfo, abort: BooleanArray): String? {
-        if (abort[0]) return null
+    private fun collectFirstText(node: AccessibilityNodeInfo, abort: BooleanArray, sb: StringBuilder) {
+        if (abort[0] || meaningfulLength(sb) >= FIRST_TEXT_CHAR_LIMIT) return
         val text = node.text?.toString()?.trim()
         if (!text.isNullOrEmpty()) {
-            if (abortOnFirstLabels.any { text.startsWith(it) }) {
+            if (abortOnFirstLabels.any { text.startsWith(it) } || text[0].isDigit()) {
                 abort[0] = true
-                return null
+                return
             }
-            if (hudSkipLabels.none { text.startsWith(it) }) return text
+            if (hudSkipLabels.none { text.startsWith(it) }) {
+                // 노드 통째로 붙이지 않고, 문자/숫자 기준 상한에 닿을 때까지만 글자 단위로 붙인다.
+                var count = meaningfulLength(sb)
+                val needSeparator = sb.isNotEmpty()
+                var separatorAdded = false
+                for (ch in text) {
+                    if (count >= FIRST_TEXT_CHAR_LIMIT) break
+                    if (needSeparator && !separatorAdded) {
+                        sb.append(' ')
+                        separatorAdded = true
+                    }
+                    sb.append(ch)
+                    if (ch.isLetterOrDigit()) count++
+                }
+            }
         }
         for (i in 0 until node.childCount) {
+            if (abort[0] || meaningfulLength(sb) >= FIRST_TEXT_CHAR_LIMIT) break
             val child = node.getChild(i) ?: continue
-            val found = findFirstText(child, abort)
+            collectFirstText(child, abort, sb)
             child.recycle()
-            if (abort[0]) return null
-            if (found != null) return found
         }
-        return null
     }
 }

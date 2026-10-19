@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "625174903667",
+    "project_id": "seoul2033reader",
+    "storage_bucket": "seoul2033reader.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:625174903667:android:917cc6159f64d234dae306",
+        "android_client_info": {
+          "package_name": "com.seoul2033wiki"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZX0TpD0t5n1ldU8M40h6Z6PrSSqEdkYk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

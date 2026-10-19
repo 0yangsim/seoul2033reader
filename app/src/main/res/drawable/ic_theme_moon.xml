@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 다크모드 아이콘 (달) — 탭하면 다크모드로 전환됨을 뜻함 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M20.74,15.11A8.5,8.5 0,0 1,8.89 3.26a0.75,0.75 0,0 0,-0.98 -0.98A10,10 0,1 0,21.72 16.09a0.75,0.75 0,0 0,-0.98 -0.98z"/>
+</vector>

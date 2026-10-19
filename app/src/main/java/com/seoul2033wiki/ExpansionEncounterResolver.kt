@@ -706,17 +706,16 @@ object ExpansionEncounterResolver {
 
             // 2.3.5.1 잠입 1일차
 
-            "먹이조에합류한당신은유인원들을따라거대한사과나무를발견한다" to "잠입 1일차",
-            "소수의고릴라가이끄는경계조에합류한당신은잠복해있던남녀둘이고릴라에게끌려가는걸지켜본다" to "잠입 1일차",
-            "침팬지와오랑우탄이섞여있는돌봄조에합류한당신은온갖야생동물들이모여있는곳으로이동한다" to "잠입 1일차",
+            "시작야차왕이명령을내립니다원숭이무리고릴라무리오랑우탄무리" to "잠입 1일차",
 
             // 2.3.5.2 잠입 2일차
-            "잠입이틀째새로운일과를보내려한다" to "잠입 2일차",
-            "무리를이탈해급히볼일을보려는데멀리서바스락하는소리가난다" to "잠입 2일차",
-            "돌봄조는경계조와치료조로나뉘는것을알게된다야차왕의부하오랑우탄이피묻은구급상자를나르며동물들을치료한다" to "잠입 2일차",
+            "잠입이틀째입니다지난밤엔늘그랬듯이뜬눈으로밤을보냈습니다" to "잠입 2일차",
+            "잠입이틀째입니다지난밤엔행여나잠꼬대나코골이를할까봐뜬눈으로밤을보냈습니다" to "잠입 2일차",
+            "해가떴으니새로운일과를해내야합니다" to "잠입 2일차",
 
             // 2.3.5.3 잠입 3일차
-            "잠입사흘째인간과야차왕의결전일이되었다모든유인원이경계조로편성된다" to "잠입 3일차",
+            "사흘째아침입니다" to "잠입 3일차",
+            "욱신거리는머리를가누며밖으로나가보니어젯밤의경계태세가" to "잠입 3일차",
 
             // 2.3.5.4 결전
             "전투를준비하던중형욱에게산탄총을받는다" to "결전",
@@ -1006,7 +1005,29 @@ object ExpansionEncounterResolver {
         // ══════════════════════════════════════════════════════════════════
         "마님의 바텐더" to listOf(
             "오랜만에마님에들렀습니다이모가주는술과안주가그리워서요" to "인카운터 목록",
-            "손님이들어옵니다이십대후반에서삼십대초반으로보이는부드러운인상의남성입니다" to "부드러운 인상의 남성",
+
+            // 2.1 가죽 조끼를 입은 남자
+            "조잡하게기운가죽조끼를입은30대중후반의남자입니다" to "가죽 조끼를 입은 남자",
+
+            // 2.2 빵모자를 쓴 남자
+            "낡은빵모자를쓴남자입니다" to "빵모자를 쓴 남자",
+            "네보드카요이상하잖아요보드카라는말자체가보드카보드카왜이게보드카일까요" to "빵모자를 쓴 남자",
+
+            // 2.3 오렌지 코스모스폴리탄
+            "정돈되지않은턱수염이덥수룩하게자란남자입니다" to "오렌지 코스모스폴리탄",
+
+            // 2.8 선글라스 낀 남자
+            "야아이것봐라마님이아주근사하게바뀌었군그래" to "선글라스 낀 남자",
+
+            // 2.14 방탄조끼를 입은 남자
+            "방탄조끼를입은손님이경호원에게총을맡기고들어옵니다" to "방탄조끼를 입은 남자",
+
+            // 2.18 봄베이 헬파이어를 주문하는 여자
+            "고상한옷차림의40대여성입니다" to "봄베이 헬파이어를 주문하는 여자",
+
+            // 2.19 부드러운 인상의 남성
+            "이십대후반에서삼십대초반으로보이는부드러운인상의남성입니다" to "부드러운 인상의 남성",
+
             "길었던하루가끝났습니다" to "장사 끝",
 
             ),
@@ -3137,7 +3158,8 @@ object ExpansionEncounterResolver {
             "송엽사가부탁한책을구할건물도몇개있어보이네요어디로가면좋을까요" to "책 구하기 1 (육군사관학교)",
 
             // 2.2.1.2 책 구하기 2 (덕성여대)
-            "참을걸어간끝에마침내덕성여대정문이보입니다비록유리창도깨지고무너진곳도많지만멀쩡히남아있는금색대학간판이" to "책 구하기 2 (덕성여대)",
+            "한참을걸어간끝에마침내덕성여대정문이보입니다비록유리창도깨지고무너진곳도많지만멀쩡히남아있는금색대학간판이" to "책 구하기 2 (덕성여대)",
+            "정문에서멀리떨어지지않은곳에빨간벽돌로지어진깔끔한건물하나가보입니다" to "책 구하기 2 (덕성여대)",
             "계단을올라가자투명한유리문으로막힌커다란강의실이모습을드러냅니다" to "책 구하기 2 (덕성여대)",
             "계단을올라새하얀복도를걸어가자실험실이보입니다앗그때실험실안에서" to "책 구하기 2 (덕성여대)",
 
@@ -3213,14 +3235,17 @@ object ExpansionEncounterResolver {
             // 2.2.20 사격장 건축 1
             "도봉경찰서앞을지나는데송엽사가반가운얼굴로멀리서부터이쪽으로오라는손짓을합니다" to "사격장 건축 1",
             "저번에구한책은아주요긴하게쓰고있어필사병들과복사기가조금고생하고있기는하지만" to "사격장 건축 1",
+            "도봉경찰서로돌아오니항상입구에나와있던송엽사의모습이보이지않습니다" to "사격장 건축 1",
+            "사람들의안내를받으며좁다란골목을따라들어가자마침내콘크리트를훤히드러낸채" to "사격장 건축 1",
 
             // 2.2.21 사격장 건축 2
             "오랜만에도봉경찰서를찾으니다들무언가를열심히옮기며분주히돌아다니고있습니다" to "사격장 건축 2",
             "송엽사가사격장을건축중이니도와달라고한다" to "사격장 건축 2",
 
+
             // 2.2.22 사격 연습
             "도봉경찰서앞을지나는데총소리가잔뜩들려오고있습니다설마송곳니놈들이쳐들어오기라도한걸까요" to "사격 연습",
-            "민우가사격장공사가끝났다며이제사격훈련을할수있다고한다" to "사격 연습",
+            "민우를따라가자한참사격훈련에열심인신입엽사들이보입니다다들분주히" to "사격 연습",
 
             // 2.2.23 체력 훈련
             "오랜만에도봉경찰서에들리니다들공터에서땀을뻘뻘흘리며운동을하고있습니다" to "체력 훈련",
@@ -4063,7 +4088,8 @@ object ExpansionEncounterResolver {
 
             // 3.1 현상수배 포스터
             "당신이경찰서앞을지나가는데문득경찰서정문에붙어있는벽보를발견합니다" to "현상수배 포스터",
-            "당신의현상수배가붙어있는데실제보다악당처럼그려놓았다" to "현상수배 포스터",
+            "당신은밑도끝도없이돌아다니다잠시멈추어섭니다멈춰선곳은당신의현상수배포스터" to "현상수배 포스터",
+            "무너진건물들사이로지나던도중노란방독면으로얼굴을가린사람이골목에서튀어나와이쪽으로 달려옵니다" to "현상수배 포스터",
 
             // 3.2 도시 광산
             "수배자는밤에도안심하고잘수없습니다저물녘이되어당신은빌라의옥탑방을임시거처로삼습니다" to "도시 광산",
@@ -4150,6 +4176,7 @@ object ExpansionEncounterResolver {
         "준비된 전문가" to listOf(
 
             // 인터뷰 기사
+            "두툼한파일철을발견했습니다먼지를털고펼쳐보니단정한활자로짜맞춰진옛뉴스스크랩이" to "인터뷰 기사",
             "식량이넉넉해진덕분에한동안미뤄뒀던지역문화센터에들르게되었습니다" to "인터뷰 기사",
             "복도구석에쌓인잡지와자료사이를걷다가오래된파일철한권을발견했습니다" to "인터뷰 기사",
             "당신은신문을넘기다마지막에실린한인터뷰기사가눈길을끄는것을발견합니다" to "인터뷰 기사"
@@ -5691,7 +5718,9 @@ object ExpansionEncounterResolver {
         // 2) 앞 500자: 앞부분에 키가 등장하는 인카운터 커버 (fallback)
         val rawNorm = normalize(rawText)
         val backInput  = if (rawNorm.length > 2000) rawNorm.takeLast(2000) else rawNorm
-        val frontInput = if (rawNorm.length > 500)  rawNorm.take(500)      else rawNorm
+        // 뒤 2000자가 전체를 이미 덮는 경우(대부분)엔 앞쪽 폴백이 의미 없으므로 null.
+        // (예전엔 501~2000자일 때도 앞 500자를 중복 탐색했고, !== 참조 비교에 의존했음)
+        val frontInput: String? = if (rawNorm.length > 2000) rawNorm.take(500) else null
 
         // knownExpansion이 있으면 해당 그룹 이름만 필터 Set으로 만들어 인덱스 결과를 걸러냄
         val groupNames: Set<String>? = if (knownExpansion != null) {
@@ -5724,7 +5753,7 @@ object ExpansionEncounterResolver {
         }
 
         var (bestKey, bestAnchor, bestExpansion) = exactMatch(backInput)
-        if (bestKey.isEmpty() && frontInput !== backInput)
+        if (bestKey.isEmpty() && frontInput != null)
             exactMatch(frontInput).also { (k, a, e) -> if (k.isNotEmpty()) { bestKey = k; bestAnchor = a; bestExpansion = e } }
 
         if (bestKey.isNotEmpty()) {
@@ -5778,7 +5807,7 @@ object ExpansionEncounterResolver {
         }
 
         var (hBestKey, hBestAnchor, hBestExpansion) = halfMatch(backInput)
-        if (hBestKey.isEmpty() && frontInput !== backInput)
+        if (hBestKey.isEmpty() && frontInput != null)
             halfMatch(frontInput).also { (k, a, e) -> if (k.isNotEmpty()) { hBestKey = k; hBestAnchor = a; hBestExpansion = e } }
 
         if (hBestKey.isNotEmpty()) {
@@ -5811,10 +5840,9 @@ object ExpansionEncounterResolver {
             return candidates.maxWithOrNull(compareBy({ it.score }, { candidates.indexOf(it) }))
         }
 
-        val fuzzyCandidates = mutableListOf<FuzzyCandidate>()
-        fuzzyMatch(backInput)?.let { fuzzyCandidates.add(it) }
-        if (frontInput !== backInput) fuzzyMatch(frontInput)?.let { fuzzyCandidates.add(it) }
-        val fuzzyBest = fuzzyCandidates.maxWithOrNull(compareBy({ it.score }, { fuzzyCandidates.indexOf(it) }))
+        // 완전/절반 매칭과 동일하게 "뒤(아래) 우선 → 없을 때만 앞(위)" 순서.
+        // (예전엔 둘을 합쳐 점수 비교 + 동점이면 앞쪽 후보가 이겨서 우선순위가 뒤집혔음)
+        val fuzzyBest = fuzzyMatch(backInput) ?: frontInput?.let { fuzzyMatch(it) }
 
         if (fuzzyBest != null) {
             Log.d(TAG, "확장팩 유사도 매칭: '${fuzzyBest.expansion}' > '${fuzzyBest.anchor}' (점수=${"%.2f".format(fuzzyBest.score)}, 키=${fuzzyBest.key.take(15)}...)")

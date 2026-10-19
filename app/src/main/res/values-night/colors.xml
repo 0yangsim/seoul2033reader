@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  다크모드 팔레트 (values-night/colors.xml).
+  기존 UI에서 쓰던 색상 값을 그대로 옮긴 것 — 화면이 달라지지 않음.
+-->
+<resources>
+    <color name="color_bg_root">#0D0D0D</color>
+    <color name="color_bg_topbar">#111111</color>
+
+    <color name="color_text_title">#EEEEEE</color>
+    <color name="color_text_body">#BBBBBB</color>
+    <color name="color_text_help">#AAAAAA</color>
+    <color name="color_text_tertiary">#999999</color>
+    <color name="color_text_muted">#777777</color>
+    <color name="color_text_hint">#555555</color>
+    <color name="color_text_label">#444444</color>
+
+    <color name="color_chevron">#666666</color>
+    <color name="color_divider">#1E1E1E</color>
+    <color name="color_divider_soft">#2A2A2A</color>
+
+    <color name="color_danger">#FF6B6B</color>
+
+    <!-- 버튼 / 카드 드로어블용 (기존 디자인 값 그대로) -->
+    <color name="color_card_bg">#111111</color>
+    <color name="color_card_stroke">#2A2A2A</color>
+
+    <color name="color_btn_manage_bg">#1E1E1E</color>
+    <color name="color_btn_manage_stroke">#404040</color>
+
+    <color name="color_btn_primary_bg">#2E2E2E</color>
+    <color name="color_btn_primary_stroke">#909090</color>
+
+    <color name="color_btn_secondary_bg">#242424</color>
+    <color name="color_btn_secondary_stroke">#606060</color>
+
+    <color name="color_btn_stop_bg">#1E1E1E</color>
+    <color name="color_btn_stop_stroke">#484848</color>
+</resources>

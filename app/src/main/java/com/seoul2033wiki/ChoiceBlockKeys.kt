@@ -36,8 +36,9 @@ object ChoiceBlockKeys {
     // 설정 화면에 표시할 카테고리 — 필요한 것만 등록해서 사용
     val CATEGORIES: List<Category> = listOf(
         // Category("메인스토리:도봉산", "메인 스토리 : 도봉산", Group.MAIN_STORY),
-        Category("확장팩:황소너구리 왕국", "황소너구리 왕국", Group.EXPANSION),
-        Category("이야기:이북 리더", "이북 리더", Group.STORY)
+        Category("확장팩:황소너구리 왕국", "황소너구리 왕국 - 첫 진입", Group.EXPANSION),
+        Category("이야기:이북 리더1", "이북 리더 - 진입", Group.STORY),
+        Category("이야기:이북 리더2", "이북 리더 - 종근당", Group.STORY),
         // TODO: 카테고리 추가 시 여기에 등록
         // Category("확장팩:확장팩명", "확장팩명", Group.EXPANSION),
         // Category("이야기:이야기명", "이야기명", Group.STORY),
@@ -46,9 +47,9 @@ object ChoiceBlockKeys {
     val KEYS: List<KeyEntry> = listOf(
         // KeyEntry("핵전쟁으로세상이멸망하고난뒤", "메인스토리:도봉산")
         // TODO: 차단할 인카운터의 키구문을 여기에 추가
-        KeyEntry("알록달록하고왠지모르겠지만북슬북슬한전단지가담벼락에붙어있습니다", "확장팩:황소너구리 왕국"),
-        KeyEntry("아글쎄오해라니까요한적한공터를지나는데어딘가에서시끌벅적하게실랑", "이야기:이북 리더"),
-        KeyEntry("당신은오랜만에북커버그의작업장을찾아가보기로합니다", "이야기:이북 리더"),
+        KeyEntry("알록달록하고왠지모르", "확장팩:황소너구리 왕국"),
+        KeyEntry("아글쎄오해라니까요한", "이야기:이북 리더1"),
+        KeyEntry("당신은오랜만에북커버", "이야기:이북 리더2"),
         // KeyEntry("예시키구문1", "확장팩:황소너구리 왕국"),
         // KeyEntry("예시키구문2", "이야기:이북 리더"),
     )

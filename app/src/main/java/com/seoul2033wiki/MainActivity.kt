@@ -1,15 +1,19 @@
 package com.seoul2033wiki
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.SeekBar
@@ -18,7 +22,9 @@ import android.widget.Toast
 import android.widget.ViewFlipper
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.appcompat.widget.SwitchCompat
@@ -33,11 +39,25 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusText: TextView
     private lateinit var switchAutoStart: SwitchCompat
     private lateinit var switchAutoStop: SwitchCompat
+    private lateinit var btnThemeToggle: ImageView
     private lateinit var prefs: SharedPreferences
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    // 알림 권한(POST_NOTIFICATIONS, Android 13+) 요청 결과 콜백.
+    // registerForActivityResult는 Activity가 STARTED 상태가 되기 전(필드 초기화 시점)에 등록해야 한다.
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            Log.d("MainActivity", "알림 권한 요청 결과: $granted")
+            if (!granted) {
+                Toast.makeText(this, "알림 권한이 거부되어 공지 알림을 받을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 폰 시스템 다크모드와 무관하게 앱 자체 저장값으로 다크/라이트 강제 적용.
+        // 반드시 super.onCreate()보다 먼저 호출해야 첫 화면부터 반영된다.
+        ThemeManager.applySavedTheme(this)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
@@ -55,9 +75,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ── 접근성 서비스 명시적 공개 동의 ───────────────────────────────────────
+    // 이 다이얼로그가 끝난 뒤에만 알림 권한 다이얼로그를 띄운다 (동시에 show()하면
+    // 뒤에 뜬 다이얼로그가 앞 걸 바로 덮어버려서 접근성 안내가 안 보이는 것처럼 되어버림).
     private fun showAccessibilityDisclosureIfNeeded() {
-        if (prefs.getBoolean("accessibility_disclosed", false)) return
-        if (prefs.getBoolean("accessibility_declined", false)) return
+        if (prefs.getBoolean("accessibility_disclosed", false) ||
+            prefs.getBoolean("accessibility_declined", false)
+        ) {
+            requestNotificationPermissionIfNeeded()
+            return
+        }
 
         val dialog = AlertDialog.Builder(this)
             .setTitle("접근성 서비스 사용 안내")
@@ -76,9 +102,11 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("동의") { _, _ ->
                 prefs.edit().putBoolean("accessibility_disclosed", true).apply()
                 Log.d("MainActivity", "접근성 안내 동의 (버튼)")
+                requestNotificationPermissionIfNeeded()
             }
             .setNegativeButton("거부") { _, _ ->
                 markAccessibilityDeclined("버튼")
+                requestNotificationPermissionIfNeeded()
             }
             .setCancelable(true)
             .create()
@@ -87,9 +115,30 @@ class MainActivity : AppCompatActivity() {
         // 좌표를 직접 계산해서 판정한다.
         dialog.setOnCancelListener {
             markAccessibilityDeclined("뒤로가기")
+            requestNotificationPermissionIfNeeded()
         }
-        attachManualOutsideTouchDismiss(dialog) { markAccessibilityDeclined("바깥 터치") }
+        attachManualOutsideTouchDismiss(dialog) {
+            markAccessibilityDeclined("바깥 터치")
+            requestNotificationPermissionIfNeeded()
+        }
         dialog.show()
+    }
+
+    // ── 알림 권한 (Android 13 / API 33 이상만 런타임 요청이 필요) ───────────────
+    // 별도 안내 다이얼로그 없이 시스템 권한 팝업만 바로 띄움.
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return // 13 미만은 설치 시 자동 허용됨
+
+        val alreadyGranted = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        if (alreadyGranted) return
+
+        // 한 번 물어본 뒤에는 앱을 다시 켤 때마다 또 띄우지 않음
+        if (prefs.getBoolean(KEY_NOTIFICATION_ASKED, false)) return
+        prefs.edit().putBoolean(KEY_NOTIFICATION_ASKED, true).apply()
+
+        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
     // 거부 상태 저장 + 로그 + 사용자 피드백 (바깥 터치 시에도 실제로 반영됐음을 알 수 있도록)
@@ -154,7 +203,38 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnStop).setOnClickListener { stopOverlay() }
         findViewById<Button>(R.id.btnSettings).setOnClickListener { viewFlipper.displayedChild = SCREEN_SETTINGS }
         findViewById<Button>(R.id.btnHelp).setOnClickListener { viewFlipper.displayedChild = SCREEN_HELP }
+
+        setupThemeToggle()
     }
+
+    // ── 다크모드/라이트모드 전환 버튼 (메인화면 우측 상단 고정) ────────────────
+    private fun setupThemeToggle() {
+        btnThemeToggle = findViewById(R.id.btnThemeToggle)
+
+        // 상태 바 높이만큼 위쪽 여백을 더해서 노치/상태바와 겹치지 않게 함
+        ViewCompat.setOnApplyWindowInsetsListener(btnThemeToggle) { v, insets ->
+            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            val lp = v.layoutParams as android.view.ViewGroup.MarginLayoutParams
+            lp.topMargin = top + BASE_THEME_BTN_MARGIN_DP.dpToPx()
+            v.layoutParams = lp
+            insets
+        }
+
+        updateThemeToggleIcon()
+        btnThemeToggle.setOnClickListener {
+            ThemeManager.toggle(this)
+            recreate()
+        }
+    }
+
+    private fun updateThemeToggleIcon() {
+        // 아이콘은 "지금 상태"가 아니라 "누르면 바뀔 상태"를 보여줌
+        btnThemeToggle.setImageResource(
+            if (ThemeManager.isDarkMode(this)) R.drawable.ic_theme_sun else R.drawable.ic_theme_moon
+        )
+    }
+
+    private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
 
     // 실험용 기능 화면의 선택지 자동 차단 항목에 현재 상태(켜짐/꺼짐 + 차단 시간)를 요약해서 보여줌
     private lateinit var tvChoiceBlockSummary: TextView
@@ -193,6 +273,90 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ── Read 버튼 크기 조절 (동적 생성) ──────────────────────────────────────
+    // XML에 전용 슬라이더가 없어서, "버튼 위치 초기화" 버튼 다음에 코드로
+    // 크기 슬라이더 + 초기화 행을 끼워 넣는다.
+    private fun setupOverlayBtnScaleRow() {
+        val parent = findViewById<View>(R.id.btnResetPosition).parent as? LinearLayout ?: return
+        val anchorIndex = parent.indexOfChild(findViewById(R.id.btnResetPosition))
+
+        val density = resources.displayMetrics.density
+
+        // 다른 설정 카드들과 동일한 카드 배경 + 여백
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = getDrawable(R.drawable.status_card)
+            val hPad = (20 * density).toInt()
+            val vPad = (14 * density).toInt()
+            setPadding(hPad, vPad, hPad, vPad)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = (12 * density).toInt() }
+        }
+
+        val savedScale = prefs.getFloat(KEY_OVERLAY_BTN_SCALE, DEFAULT_BTN_SCALE)
+        val tvLabel = TextView(this).apply {
+            text = "Read 버튼 크기: ${"%.1f".format(savedScale)}배"
+            textSize = 14f
+            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_text_body))
+            typeface = AppFont.regular(this@MainActivity)
+            setPadding(0, 0, 0, (4 * density).toInt())
+        }
+        container.addView(tvLabel)
+
+        // SeekBar는 정수만 다루므로 0.5~2.0배를 5~20(0.1 단위)로 매핑
+        val seekScale = SeekBar(this).apply {
+            max = 15 // 5(0.5배) ~ 20(2.0배)
+            progress = (savedScale * 10).toInt() - 5
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = (4 * density).toInt() }
+        }
+        seekScale.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                val scale = (progress + 5) / 10f
+                tvLabel.text = "Read 버튼 크기: ${"%.1f".format(scale)}배"
+                if (fromUser) {
+                    prefs.edit().putFloat(KEY_OVERLAY_BTN_SCALE, scale).apply()
+                    startService(Intent(this@MainActivity, OverlayService::class.java).apply {
+                        action = ACTION_SET_BTN_SCALE
+                        putExtra(EXTRA_BTN_SCALE_VALUE, scale)
+                    })
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        })
+        container.addView(seekScale)
+
+        val btnResetScale = Button(this).apply {
+            text = "버튼 크기 초기화"
+            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_text_tertiary))
+            textSize = 13f
+            background = getDrawable(R.drawable.btn_stop)
+            stateListAnimator = null
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (46 * density).toInt()
+            ).apply { topMargin = (12 * density).toInt() }
+        }
+        btnResetScale.setOnClickListener {
+            prefs.edit().putFloat(KEY_OVERLAY_BTN_SCALE, DEFAULT_BTN_SCALE).apply()
+            seekScale.progress = (DEFAULT_BTN_SCALE * 10).toInt() - 5
+            tvLabel.text = "Read 버튼 크기: ${"%.1f".format(DEFAULT_BTN_SCALE)}배"
+            startService(Intent(this, OverlayService::class.java).apply {
+                action = ACTION_SET_BTN_SCALE
+                putExtra(EXTRA_BTN_SCALE_VALUE, DEFAULT_BTN_SCALE)
+            })
+            Toast.makeText(this, "버튼 크기가 초기화됐습니다.", Toast.LENGTH_SHORT).show()
+        }
+        container.addView(btnResetScale)
+
+        parent.addView(container, anchorIndex + 1)
+    }
+
     // ── 설정 화면 ──────────────────────────────────────────────────────────
     private fun setupSettingsScreen() {
         // 상단 바 status bar 높이만큼 padding 추가 (뒤로가기 버튼 겹침 방지)
@@ -218,6 +382,8 @@ class MainActivity : AppCompatActivity() {
                 action = ACTION_RESET_POSITION
             })
         }
+
+        setupOverlayBtnScaleRow()
 
         // 터치 ON일 때 투명도
         val tvAlphaOnLabel = findViewById<TextView>(R.id.tvAlphaOnLabel)
@@ -377,6 +543,10 @@ class MainActivity : AppCompatActivity() {
 
         // 예시 팝업 보기
         findViewById<Button>(R.id.btnShowExample).setOnClickListener {
+            if (!Settings.canDrawOverlays(this)) {
+                Toast.makeText(this, "먼저 오버레이 권한을 허용해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             startService(Intent(this, OverlayService::class.java).apply {
                 action = ACTION_SHOW_EXAMPLE
             })
@@ -491,7 +661,7 @@ class MainActivity : AppCompatActivity() {
             android.widget.CheckBox(this).apply {
                 text = category.label
                 textSize = 13f
-                setTextColor(0xFFBBBBBB.toInt())
+                setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_text_body))
                 isChecked = category.id !in disabled
                 setPadding(0, 12, 0, 12)
                 setOnCheckedChangeListener { _, isChecked ->
@@ -649,8 +819,15 @@ class MainActivity : AppCompatActivity() {
         const val ACTION_SET_SIZE_OFF   = "action_set_size_off"
         const val ACTION_RESET_SETTINGS = "action_reset_settings"
         const val ACTION_SHOW_EXAMPLE   = "action_show_example"
+        const val ACTION_SET_BTN_SCALE  = "action_set_btn_scale"
         const val EXTRA_ALPHA_VALUE     = "extra_alpha_value"
         const val EXTRA_WIDTH_VALUE     = "extra_width_value"
         const val EXTRA_HEIGHT_VALUE    = "extra_height_value"
+        const val EXTRA_BTN_SCALE_VALUE = "extra_btn_scale_value"
+        const val KEY_OVERLAY_BTN_SCALE = "overlay_btn_scale"
+        const val DEFAULT_BTN_SCALE     = 1f
+        const val KEY_NOTIFICATION_ASKED = "notification_permission_asked"
+
+        private const val BASE_THEME_BTN_MARGIN_DP = 10
     }
 }
