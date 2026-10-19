@@ -3,6 +3,7 @@ package com.seoul2033wiki
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
@@ -43,6 +44,9 @@ class OverlayService : Service() {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "overlay_channel"
 
+        // "실행 중" 알림을 눌렀을 때 오버레이(Read 버튼)를 종료하기 위한 액션
+        const val ACTION_STOP_OVERLAY = "com.seoul2033wiki.ACTION_STOP_OVERLAY"
+
         // 접근성 서비스(Seoul2033AccessibilityService)가 자동 감지 시 직접 호출할 수 있도록 노출
         @Volatile
         var instance: OverlayService? = null
@@ -61,6 +65,10 @@ class OverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP_OVERLAY) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (intent?.action == MainActivity.ACTION_SAVE_POSITION) {
             saveOverlayPosition()
             return START_NOT_STICKY
@@ -118,17 +126,17 @@ class OverlayService : Service() {
         }
         if (overlayView != null) {
             handler.post {
-                Toast.makeText(this, getString(R.string.overlay_already_running), Toast.LENGTH_LONG).show()
+                ToastHelper.show(this, getString(R.string.overlay_already_running), Toast.LENGTH_LONG)
             }
             return START_NOT_STICKY
         }
         if (!Seoul2033AccessibilityService.isAlive(this)) {
             handler.post {
-                Toast.makeText(
+                ToastHelper.show(
                     this,
                     "접근성 서비스가 연결되지 않았습니다.\n설정 → 접근성 → 서울2033 리더를 활성화해주세요.",
                     Toast.LENGTH_LONG
-                ).show()
+                )
             }
         }
         setupOverlay()
@@ -139,7 +147,7 @@ class OverlayService : Service() {
     // ── 버튼 위치 저장 / 초기화 ─────────────────────────────────────────────
     private fun saveOverlayPosition() {
         val view = overlayView ?: run {
-            handler.post { Toast.makeText(this, "오버레이가 실행 중이지 않습니다.", Toast.LENGTH_SHORT).show() }
+            handler.post { ToastHelper.show(this, "오버레이가 실행 중이지 않습니다.", Toast.LENGTH_SHORT) }
             return
         }
         val params = view.layoutParams as? WindowManager.LayoutParams ?: return
@@ -148,7 +156,7 @@ class OverlayService : Service() {
             .putInt("overlay_y", params.y)
             .putInt("overlay_gravity", params.gravity)
             .apply()
-        handler.post { Toast.makeText(this, "위치가 저장됐어요!", Toast.LENGTH_SHORT).show() }
+        handler.post { ToastHelper.show(this, "위치가 저장됐어요!", Toast.LENGTH_SHORT) }
     }
 
     private fun resetOverlayPosition() {
@@ -168,7 +176,7 @@ class OverlayService : Service() {
                 try { windowManager.updateViewLayout(view, params) } catch (_: Exception) {}
             }
         }
-        handler.post { Toast.makeText(this, "버튼 위치가 초기화됐어요!", Toast.LENGTH_SHORT).show() }
+        handler.post { ToastHelper.show(this, "버튼 위치가 초기화됐어요!", Toast.LENGTH_SHORT) }
     }
 
     // ── 드래그 종료 영역 오버레이 ────────────────────────────────────────────
@@ -326,16 +334,16 @@ class OverlayService : Service() {
                         hideDropZone()
                         v.performClick()
                         if (isCapturing) {
-                            Toast.makeText(this, "인식 중입니다. 잠깐만요...", Toast.LENGTH_SHORT).show()
+                            ToastHelper.show(this, "인식 중입니다. 잠깐만요...", Toast.LENGTH_SHORT)
                         } else if (!Seoul2033AccessibilityService.isAlive(this)) {
                             btnText.text = "!"
                             btnText.setBackgroundResource(R.drawable.overlay_btn_bg_active)
                             btnText.setTextColor(0xFFFF4444.toInt())
-                            Toast.makeText(
+                            ToastHelper.show(
                                 this,
                                 "접근성 서비스가 끊겼습니다.\n설정 → 접근성 → 서울2033 리더를 재활성화해주세요.",
                                 Toast.LENGTH_LONG
-                            ).show()
+                            )
                             handler.postDelayed({
                                 btnText.text = getString(R.string.btn_read)
                                 btnText.setBackgroundResource(R.drawable.overlay_btn_bg)
@@ -366,9 +374,9 @@ class OverlayService : Service() {
 
         try {
             windowManager.addView(newView, params)
-            handler.post { Toast.makeText(this, "Read 버튼이 화면 상단에 추가됐어요!", Toast.LENGTH_LONG).show() }
+            handler.post { ToastHelper.show(this, "Read 버튼이 화면 상단에 추가됐어요!", Toast.LENGTH_LONG) }
         } catch (e: Exception) {
-            handler.post { Toast.makeText(this, "버튼 추가 실패: ${e.message}", Toast.LENGTH_LONG).show() }
+            handler.post { ToastHelper.show(this, "버튼 추가 실패: ${e.message}", Toast.LENGTH_LONG) }
         }
     }
 
@@ -378,11 +386,11 @@ class OverlayService : Service() {
             Seoul2033AccessibilityService.instance else null
         if (accessibility == null) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(
+                ToastHelper.show(
                     this@OverlayService,
                     "접근성 서비스가 연결되지 않았습니다.\n설정 → 접근성 → 서울2033 리더를 활성화해주세요.",
                     Toast.LENGTH_LONG
-                ).show()
+                )
                 onDone()
             }
             return
@@ -392,11 +400,11 @@ class OverlayService : Service() {
         }
         if (rawText.isNullOrBlank()) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(
+                ToastHelper.show(
                     this@OverlayService,
                     "서울2033 화면 텍스트를 읽지 못했습니다.\n게임이 실행 중인지 확인해주세요.",
                     Toast.LENGTH_SHORT
-                ).show()
+                )
                 onDone()
             }
             return
@@ -409,11 +417,7 @@ class OverlayService : Service() {
             if (entry != null) {
                 showResultPopup(entry)
             } else {
-                Toast.makeText(
-                    this@OverlayService,
-                    "인식된 텍스트:\n${rawText.take(80)}\n\n패턴 매칭 실패",
-                    Toast.LENGTH_LONG
-                ).show()
+                Log.d("Seoul2033Wiki", "패턴 매칭 실패 (토스트 없음)")
             }
             onDone()
         }
@@ -767,7 +771,7 @@ class OverlayService : Service() {
                 windowManager.addView(root, params)
             } catch (e: Exception) {
                 Log.e("Seoul2033Wiki", "팝업 표시 오류", e)
-                Toast.makeText(ctx, "팝업 표시 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+                ToastHelper.show(ctx, "팝업 표시 실패: ${e.message}", Toast.LENGTH_SHORT)
             }
         }
     }
@@ -1303,7 +1307,7 @@ class OverlayService : Service() {
             windowManager.addView(webView, webParams)
         } catch (e: Exception) {
             Log.e("Seoul2033Wiki", "WebOverlay webView 추가 오류", e)
-            Toast.makeText(ctx, "WebView 팝업 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+            ToastHelper.show(ctx, "WebView 팝업 실패: ${e.message}", Toast.LENGTH_SHORT)
             return
         }
         try {
@@ -1351,9 +1355,16 @@ class OverlayService : Service() {
     }
 
     private fun buildNotification(): Notification {
+        // 알림을 누르면 이 서비스에 STOP 액션을 보내 오버레이를 종료한다
+        val stopIntent = PendingIntent.getService(
+            this, 0,
+            Intent(this, OverlayService::class.java).apply { action = ACTION_STOP_OVERLAY },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("서울2033 리더 실행 중")
-            .setContentText("버튼을 아래로 드래그해서 종료")
+            .setContentText("알림을 누르거나 버튼을 가운데로 드래그해서 종료")
+            .setContentIntent(stopIntent)
             .setSmallIcon(android.R.drawable.ic_menu_search)
             .setOngoing(true)
             .setSilent(true)

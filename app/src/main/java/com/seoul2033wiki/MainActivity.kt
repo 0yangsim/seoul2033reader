@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             Log.d("MainActivity", "알림 권한 요청 결과: $granted")
             if (!granted) {
-                Toast.makeText(this, "알림 권한이 거부되어 공지 알림을 받을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                ToastHelper.show(this, "알림 권한이 거부되어 공지 알림을 받을 수 없습니다.", Toast.LENGTH_SHORT)
             }
         }
 
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
     private fun markAccessibilityDeclined(via: String) {
         prefs.edit().putBoolean("accessibility_declined", true).apply()
         Log.d("MainActivity", "접근성 안내 거부됨 ($via) → accessibility_declined=true")
-        Toast.makeText(this, "접근성 서비스 거부됨 — 접근성 기능을 사용할 수 없습니다.", Toast.LENGTH_LONG).show()
+        ToastHelper.show(this, "접근성 서비스 거부됨 — 접근성 기능을 사용할 수 없습니다.", Toast.LENGTH_LONG)
     }
 
     // 다이얼로그의 실제 콘텐츠(카드) 영역 바깥을 터치했을 때 dismiss + 콜백 실행.
@@ -179,22 +179,22 @@ class MainActivity : AppCompatActivity() {
         switchAutoStart.isChecked = prefs.getBoolean(KEY_AUTO_START, false)
         switchAutoStart.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean(KEY_AUTO_START, isChecked).apply()
-            Toast.makeText(
+            ToastHelper.show(
                 this,
                 if (isChecked) "서울2033 실행 시 자동으로 오버레이가 시작됩니다." else "자동 시작이 꺼졌습니다.",
                 Toast.LENGTH_SHORT
-            ).show()
+            )
         }
 
         switchAutoStop = findViewById(R.id.switchAutoStop)
         switchAutoStop.isChecked = prefs.getBoolean(KEY_AUTO_STOP, false)
         switchAutoStop.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean(KEY_AUTO_STOP, isChecked).apply()
-            Toast.makeText(
+            ToastHelper.show(
                 this,
                 if (isChecked) "서울2033 종료 시 자동으로 오버레이가 꺼집니다." else "자동 종료가 꺼졌습니다.",
                 Toast.LENGTH_SHORT
-            ).show()
+            )
         }
 
         findViewById<Button>(R.id.btnRequestOverlay).setOnClickListener { requestOverlayPermission() }
@@ -350,7 +350,7 @@ class MainActivity : AppCompatActivity() {
                 action = ACTION_SET_BTN_SCALE
                 putExtra(EXTRA_BTN_SCALE_VALUE, DEFAULT_BTN_SCALE)
             })
-            Toast.makeText(this, "버튼 크기가 초기화됐습니다.", Toast.LENGTH_SHORT).show()
+            ToastHelper.show(this, "버튼 크기가 초기화됐습니다.", Toast.LENGTH_SHORT)
         }
         container.addView(btnResetScale)
 
@@ -538,13 +538,13 @@ class MainActivity : AppCompatActivity() {
             tvHeightOffLabel.text = "터치 OFF 높이: ${DEFAULT_HEIGHT_OFF}%";seekHeightOff.progress = DEFAULT_HEIGHT_OFF
             // 실행 중인 오버레이에 반영
             startService(Intent(this, OverlayService::class.java).apply { action = ACTION_RESET_SETTINGS })
-            Toast.makeText(this, "설정값이 초기화됐습니다.", Toast.LENGTH_SHORT).show()
+            ToastHelper.show(this, "설정값이 초기화됐습니다.", Toast.LENGTH_SHORT)
         }
 
         // 예시 팝업 보기
         findViewById<Button>(R.id.btnShowExample).setOnClickListener {
             if (!Settings.canDrawOverlays(this)) {
-                Toast.makeText(this, "먼저 오버레이 권한을 허용해주세요.", Toast.LENGTH_SHORT).show()
+                ToastHelper.show(this, "먼저 오버레이 권한을 허용해주세요.", Toast.LENGTH_SHORT)
                 return@setOnClickListener
             }
             startService(Intent(this, OverlayService::class.java).apply {
@@ -687,7 +687,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnContactEmail).setOnClickListener {
             val clipboard = getSystemService(android.content.ClipboardManager::class.java)
             clipboard.setPrimaryClip(android.content.ClipData.newPlainText("이메일", "nigname2@gmail.com"))
-            android.widget.Toast.makeText(this, "이메일 주소가 클립보드에 복사되었습니다.", android.widget.Toast.LENGTH_SHORT).show()
+            ToastHelper.show(this, "이메일 주소가 클립보드에 복사되었습니다.", android.widget.Toast.LENGTH_SHORT)
         }
 
         findViewById<TextView>(R.id.btnHelpBack).setOnClickListener {
@@ -732,7 +732,7 @@ class MainActivity : AppCompatActivity() {
         if (!Settings.canDrawOverlays(this)) {
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
         } else {
-            Toast.makeText(this, "이미 오버레이 권한이 허용되어 있습니다.", Toast.LENGTH_SHORT).show()
+            ToastHelper.show(this, "이미 오버레이 권한이 허용되어 있습니다.", Toast.LENGTH_SHORT)
         }
     }
 
@@ -757,7 +757,7 @@ class MainActivity : AppCompatActivity() {
                         .putBoolean("accessibility_declined", false)
                         .apply()
                     Log.d("MainActivity", "접근성 안내 재동의 (버튼)")
-                    Toast.makeText(this, "설정에서 '서울2033 리더'를 찾아 활성화해주세요.", Toast.LENGTH_LONG).show()
+                    ToastHelper.show(this, "설정에서 '서울2033 리더'를 찾아 활성화해주세요.", Toast.LENGTH_LONG)
                     startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                 }
                 .setNegativeButton("거부") { _, _ ->
@@ -776,13 +776,13 @@ class MainActivity : AppCompatActivity() {
             dialog.show()
             return
         }
-        Toast.makeText(this, "설정에서 '서울2033 리더'를 찾아 활성화해주세요.", Toast.LENGTH_LONG).show()
+        ToastHelper.show(this, "설정에서 '서울2033 리더'를 찾아 활성화해주세요.", Toast.LENGTH_LONG)
         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
     }
 
     private fun startOverlay() {
         if (!Settings.canDrawOverlays(this)) {
-            Toast.makeText(this, "먼저 오버레이 권한을 허용해주세요.", Toast.LENGTH_SHORT).show()
+            ToastHelper.show(this, "먼저 오버레이 권한을 허용해주세요.", Toast.LENGTH_SHORT)
             return
         }
         startService(Intent(this, OverlayService::class.java))
